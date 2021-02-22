@@ -1,11 +1,11 @@
 import React from "react";
-import BlockEditor from "./BlockEditor";
+import { Editor } from "./Editor";
 
 function App() {
   return (
     <div className="App">
       <h1>Hello world</h1>
-      <BlockEditor />
+      <Editor />
     </div>
   );
 }

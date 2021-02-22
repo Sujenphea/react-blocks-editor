@@ -1,26 +1,50 @@
 import React, { useState } from "react";
+import { Block } from "./Block";
 import BlockEditor from "./BlockEditor";
+import { CharacterMetadata } from "./CharacterMetadata";
+import { BOLD, NONE } from "./InlineStyles";
 
 export const Editor = () => {
-  const [blocks, setBlocks] = useState([
-    { blockID: "1" },
-    { blockID: "2" },
-    { blockID: "3" },
-    { blockID: "4" },
-    { blockID: "5" },
+  const [blocks, setBlocks] = useState<Block[]>([
+    {
+      blockID: "1",
+      text: "helloWorld",
+      styles: [
+        { style: BOLD },
+        { style: BOLD },
+        { style: NONE },
+        { style: BOLD },
+        { style: NONE },
+        { style: NONE },
+        { style: BOLD },
+        { style: NONE },
+        { style: NONE },
+        { style: NONE },
+      ],
+    },
   ]);
 
-  const onUpdateBlock = () => {};
+  //   const onUpdateBlock = () => {};
+  const setStyles = (styles: CharacterMetadata[]) => {
+    console.log("setStyles");
+  };
+
+  const setText = (text: string) => {
+    console.log("setText");
+  };
 
   return (
-    <>
-      {/* {blocks.map((b) => {
-        return <BlockEditor block={b} onUpdate={onUpdateBlock} />;
-      })} */}
-    </>
+    <div>
+      {blocks.map((block) => {
+        return (
+          <BlockEditor
+            key={block.blockID}
+            block={block}
+            setText={setText}
+            setStyles={setStyles}
+          />
+        );
+      })}
+    </div>
   );
-};
-
-type Block = {
-  blockID: string;
 };

@@ -1,27 +1,20 @@
-import React, { useState } from "react";
+import React from "react";
+import { Block } from "./Block";
 import { CharacterMetadata } from "./CharacterMetadata";
-import { BOLD, NONE } from "./InlineStyles";
+import { BOLD } from "./InlineStyles";
 
-const BlockEditor = () => {
-  const [text, setText] = useState("HelloWorld");
-  const [styles, setStyles] = useState<CharacterMetadata[]>([
-    { style: BOLD },
-    { style: BOLD },
-    { style: NONE },
-    { style: BOLD },
-    { style: NONE },
-    { style: NONE },
-    { style: BOLD },
-    { style: NONE },
-    { style: NONE },
-    { style: NONE },
-  ]);
+export type BlockEditorProps = {
+  block: Block;
+  setText: (text: string) => void;
+  setStyles: (styles: CharacterMetadata[]) => void;
+};
 
+const BlockEditor = (props: BlockEditorProps) => {
   // handlers
   const onInput = (e: React.FormEvent) => {
     const input = e.currentTarget.textContent;
     if (input) {
-      setText(input);
+      props.setText(input);
     }
   };
 
@@ -40,47 +33,53 @@ const BlockEditor = () => {
   const insertStyle = () => {
     const i = findIndex();
 
-    if (i !== undefined && i > text.length) {
-      setStyles((styles) => {
-        return styles.concat(styles[styles.length - 1]);
-      });
+    if (i !== undefined && i > props.block.text.length) {
+      props.setStyles(
+        props.block.styles.concat(
+          props.block.styles[props.block.styles.length - 1]
+        )
+      );
     } else if (i !== undefined && i === 1) {
-      setStyles((styles) => {
-        return [styles[0]].concat(styles);
-      });
+      props.setStyles([props.block.styles[0]].concat(props.block.styles));
     } else if (i !== undefined) {
-      setStyles((styles) => {
-        return styles
+      props.setStyles(
+        props.block.styles
           .slice(0, i - 1)
-          .concat(styles[i - 2], styles.slice(i - 1, styles.length));
-      });
+          .concat(
+            props.block.styles[i - 2],
+            props.block.styles.slice(i - 1, props.block.styles.length)
+          )
+      );
     }
   };
 
   const removeStyle = () => {
     const i = findIndex();
     if (i === 0) {
-      setStyles((styles) => {
-        return styles.slice(i + 1, styles.length);
-      });
-    } else if (i === text.length) {
-      return styles.slice(0, i);
+      props.setStyles(
+        props.block.styles.slice(i + 1, props.block.styles.length)
+      );
+    } else if (i === props.block.text.length) {
+      props.setStyles(props.block.styles.slice(0, i));
     } else if (i !== undefined) {
-      setStyles((styles) => {
-        return styles.slice(0, i).concat(styles.slice(i + 1, styles.length));
-      });
+      props.setStyles(
+        props.block.styles
+          .slice(0, i)
+          .concat(props.block.styles.slice(i + 1, props.block.styles.length))
+      );
     }
   };
 
   const removeStyles = () => {
-    setStyles([]);
+    props.setStyles([]);
   };
 
   // Setup with initial text and styles
   const Setup = () => {
     let content: JSX.Element[] = [];
+    let dataTokenIndex = 0;
 
-    const styleList = styles!.map((c) => {
+    const styleList = props.block.styles.map((c) => {
       return c.style;
     });
 
@@ -91,11 +90,18 @@ const BlockEditor = () => {
       (start: number, end: number) => {
         if (styleList[start] === BOLD) {
           content.push(
-            <span style={{ fontWeight: 600 }}>{text.slice(start, end)}</span>
+            <span key={dataTokenIndex} style={{ fontWeight: 600 }}>
+              {props.block.text.slice(start, end)}
+            </span>
           );
         } else {
-          content.push(<span>{text.slice(start, end)}</span>);
+          content.push(
+            <span key={dataTokenIndex}>
+              {props.block.text.slice(start, end)}
+            </span>
+          );
         }
+        dataTokenIndex += 1;
       }
     );
 
