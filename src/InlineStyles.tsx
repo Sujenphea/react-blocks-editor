@@ -1,0 +1,10 @@
+export const BOLD = ["BOLD"];
+export const BOLD_ITALIC = ["BOLD", "ITALIC"];
+export const BOLD_ITALIC_UNDERLINE = ["BOLD", "ITALIC", "UNDERLINE"];
+export const BOLD_UNDERLINE = ["BOLD", "UNDERLINE"];
+export const CODE = ["CODE"];
+export const ITALIC = ["ITALIC"];
+export const ITALIC_UNDERLINE = ["ITALIC", "UNDERLINE"];
+export const NONE = [];
+export const STRIKETHROUGH = ["STRIKETHROUGH"];
+export const UNDERLINE = ["UNDERLINE"];
