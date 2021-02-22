@@ -1,10 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { CharacterMetadata } from "./CharacterMetadata";
 import { BOLD, NONE } from "./InlineStyles";
-// import { SelectionObject } from "./SelectionObject";
 
 const BlockEditor = () => {
-  const [block, setBlock] = useState<JSX.Element>();
   const [text, setText] = useState("HelloWorld");
   const [styles, setStyles] = useState<CharacterMetadata[]>([
     { style: BOLD },
@@ -19,37 +17,7 @@ const BlockEditor = () => {
     { style: NONE },
   ]);
 
-  const blockRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    let content: JSX.Element[] = [];
-
-    const styleList = styles!.map((c) => {
-      return c.style;
-    });
-
-    findRangesImmutable(
-      styleList,
-      (a: any, b: any) => a === b,
-      () => true,
-      (start: number, end: number) => {
-        if (styleList[start] === BOLD) {
-          content.push(
-            <span style={{ fontWeight: 600 }}>{text.slice(start, end)}</span>
-          );
-        } else {
-          content.push(<span>{text.slice(start, end)}</span>);
-        }
-      }
-    );
-    // return ;
-    setBlock(<div>{content}</div>);
-  }, []);
-
-  // useEffect(() => {
-  //   console.log(styles);
-  // }, [styles]);
-
+  // handlers
   const onInput = (e: React.FormEvent) => {
     const input = e.currentTarget.textContent;
     if (input) {
@@ -66,11 +34,9 @@ const BlockEditor = () => {
 
   const onSelect = (e: React.SyntheticEvent) => {
     // findSelection();
-    if (blockRef === null) {
-      return;
-    }
   };
 
+  // helpers
   const insertStyle = () => {
     const i = findIndex();
 
@@ -110,21 +76,47 @@ const BlockEditor = () => {
     setStyles([]);
   };
 
-  return (
-    <div
-      ref={blockRef}
-      contentEditable={true}
-      onInput={onInput}
-      onKeyDown={onKeyDown}
-      onSelect={onSelect}
-    >
-      {block}
-    </div>
-  );
+  // Setup with initial text and styles
+  const Setup = () => {
+    let content: JSX.Element[] = [];
+
+    const styleList = styles!.map((c) => {
+      return c.style;
+    });
+
+    findRangesImmutable(
+      styleList,
+      (a: any, b: any) => a === b,
+      () => true,
+      (start: number, end: number) => {
+        if (styleList[start] === BOLD) {
+          content.push(
+            <span style={{ fontWeight: 600 }}>{text.slice(start, end)}</span>
+          );
+        } else {
+          content.push(<span>{text.slice(start, end)}</span>);
+        }
+      }
+    );
+
+    return (
+      <div
+        contentEditable={true}
+        onInput={onInput}
+        onKeyDown={onKeyDown}
+        onSelect={onSelect}
+      >
+        {content}
+      </div>
+    );
+  };
+
+  return <Setup />;
 };
 
 export default BlockEditor;
 
+// helper to reduce span for setup (for now)
 const findRangesImmutable = <T extends object>(
   haystack: T[],
   areEqualFn: (a: T, b: T) => boolean,
@@ -152,6 +144,7 @@ const findRangesImmutable = <T extends object>(
   }
 };
 
+// find cursor only
 const findIndex = () => {
   const selection = window.getSelection();
 
@@ -169,6 +162,7 @@ const findIndex = () => {
   }
 };
 
+// todo: find selection range
 const findSelection = () => {
   const selection = window.getSelection();
 
