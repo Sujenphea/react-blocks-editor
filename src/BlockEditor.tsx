@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Block } from "./Block";
 import { CharacterMetadata } from "./CharacterMetadata";
 import { BOLD } from "./InlineStyles";
@@ -31,7 +31,7 @@ const BlockEditor = (props: BlockEditorProps) => {
 
   // helpers
   const insertStyle = () => {
-    const i = findIndex();
+    const i = findSelection()![0];
 
     if (i !== undefined && i > props.block.text.length) {
       props.setStyles(
@@ -54,7 +54,7 @@ const BlockEditor = (props: BlockEditorProps) => {
   };
 
   const removeStyle = () => {
-    const i = findIndex();
+    const i = findSelection()![0];
     if (i === 0) {
       props.setStyles(
         props.block.styles.slice(i + 1, props.block.styles.length)
@@ -150,25 +150,7 @@ const findRangesImmutable = <T extends object>(
   }
 };
 
-// find cursor only
-const findIndex = () => {
-  const selection = window.getSelection();
-
-  const element = selection?.anchorNode?.parentNode;
-  const parent = selection?.anchorNode?.parentNode?.parentNode;
-  const children = parent?.childNodes;
-
-  let count = 0;
-
-  for (let i = 0; i < children!.length; i++) {
-    if (children![i].isEqualNode(element as Node)) {
-      return selection!.anchorOffset + count;
-    }
-    count += children![i].textContent!.length;
-  }
-};
-
-// todo: find selection range
+// find selection range
 const findSelection = () => {
   const selection = window.getSelection();
 
