@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Block } from "./Block";
 import BlockEditor from "./BlockEditor";
 import { CharacterMetadata } from "./CharacterMetadata";
-import { BOLD, NONE } from "./InlineStyles";
+import { InlineStyles } from "./InlineStyles";
 
 export const Editor = () => {
   const [blocks, setBlocks] = useState<Block[]>([
@@ -10,16 +10,16 @@ export const Editor = () => {
       blockID: "1",
       text: "helloWorld",
       styles: [
-        { style: BOLD },
-        { style: BOLD },
-        { style: BOLD },
-        { style: NONE },
-        { style: NONE },
-        { style: NONE },
-        { style: BOLD },
-        { style: NONE },
-        { style: NONE },
-        { style: NONE },
+        { style: InlineStyles.BOLD },
+        { style: InlineStyles.BOLD },
+        { style: InlineStyles.BOLD },
+        { style: InlineStyles.NONE },
+        { style: InlineStyles.NONE },
+        { style: InlineStyles.NONE },
+        { style: InlineStyles.BOLD },
+        { style: InlineStyles.NONE },
+        { style: InlineStyles.NONE },
+        { style: InlineStyles.NONE },
       ],
     },
   ]);

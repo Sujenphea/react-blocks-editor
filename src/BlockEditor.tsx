@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Block } from "./Block";
 import { CharacterMetadata } from "./CharacterMetadata";
-import { BOLD } from "./InlineStyles";
+import { InlineStyles } from "./InlineStyles";
 
 export type BlockEditorProps = {
   block: Block;
@@ -20,8 +20,10 @@ const BlockEditor = (props: BlockEditorProps) => {
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.metaKey && e.key === "b") {
-      console.log("bold");
       e.preventDefault();
+      console.log("bold");
+
+      const selection = findSelection();
     }
   };
 
@@ -30,28 +32,30 @@ const BlockEditor = (props: BlockEditorProps) => {
   };
 
   // helpers
-  const insertStyle = () => {
-    const i = findSelection()![0];
+  // const insertStyle = (style: )
 
-    if (i !== undefined && i > props.block.text.length) {
-      props.setStyles(
-        props.block.styles.concat(
-          props.block.styles[props.block.styles.length - 1]
-        )
-      );
-    } else if (i !== undefined && i === 1) {
-      props.setStyles([props.block.styles[0]].concat(props.block.styles));
-    } else if (i !== undefined) {
-      props.setStyles(
-        props.block.styles
-          .slice(0, i - 1)
-          .concat(
-            props.block.styles[i - 2],
-            props.block.styles.slice(i - 1, props.block.styles.length)
-          )
-      );
-    }
-  };
+  // const insertStyle = () => {
+  //   const i = findSelection()![0];
+
+  //   if (i !== undefined && i > props.block.text.length) {
+  //     props.setStyles(
+  //       props.block.styles.concat(
+  //         props.block.styles[props.block.styles.length - 1]
+  //       )
+  //     );
+  //   } else if (i !== undefined && i === 1) {
+  //     props.setStyles([props.block.styles[0]].concat(props.block.styles));
+  //   } else if (i !== undefined) {
+  //     props.setStyles(
+  //       props.block.styles
+  //         .slice(0, i - 1)
+  //         .concat(
+  //           props.block.styles[i - 2],
+  //           props.block.styles.slice(i - 1, props.block.styles.length)
+  //         )
+  //     );
+  //   }
+  // };
 
   const removeStyle = () => {
     const i = findSelection()![0];
@@ -88,7 +92,7 @@ const BlockEditor = (props: BlockEditorProps) => {
       (a: any, b: any) => a === b,
       () => true,
       (start: number, end: number) => {
-        if (styleList[start] === BOLD) {
+        if (styleList[start] === InlineStyles.BOLD) {
           content.push(
             <span key={dataTokenIndex} style={{ fontWeight: 600 }}>
               {props.block.text.slice(start, end)}
