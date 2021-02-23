@@ -26,7 +26,7 @@ const BlockEditor = (props: BlockEditorProps) => {
   };
 
   const onSelect = (e: React.SyntheticEvent) => {
-    // findSelection();
+    console.log("offset, length: " + findSelection());
   };
 
   // helpers
@@ -172,32 +172,54 @@ const findIndex = () => {
 const findSelection = () => {
   const selection = window.getSelection();
 
-  console.log(selection?.anchorNode);
-  console.log(selection?.anchorOffset);
-  console.log(selection?.focusNode);
-  console.log(selection?.focusOffset);
-  // console.log(selection?.)
-
   const first = selection?.anchorNode?.parentNode;
   const second = selection?.focusNode?.parentNode;
   const parent = selection?.anchorNode?.parentNode?.parentNode;
   const children = parent?.childNodes;
 
-  let count = 0;
+  let metFirst = false;
+  let metSecond = false;
+  const same = first === second;
+  let offset = 0;
+  let length = 0;
 
-  if (first === second) {
-    for (let i = 0; i < children!.length; i++) {
+  for (let i = 0; i < children!.length; i++) {
+    if (same) {
       if (children![i].isEqualNode(first as Node)) {
-        return (
-          selection!.anchorOffset + count,
-          Math.abs(selection!.anchorOffset - selection!.focusOffset)
-        );
+        return [
+          offset + Math.min(selection!.anchorOffset, selection!.focusOffset),
+          Math.abs(selection!.anchorOffset - selection!.focusOffset),
+        ];
       }
-      count += children![i].textContent!.length;
+      offset += children![i].textContent!.length;
+    } else if (metFirst) {
+      if (children![i].isEqualNode(second as Node)) {
+        return [
+          offset + selection!.anchorOffset,
+          length + selection!.focusOffset,
+        ];
+      }
+      length += children![i].textContent!.length;
+    } else if (metSecond) {
+      if (children![i].isEqualNode(first as Node)) {
+        return [
+          offset + selection!.focusOffset,
+          length + selection!.anchorOffset,
+        ];
+      }
+      length += children![i].textContent!.length;
+    } else if (children![i].isEqualNode(first as Node)) {
+      metFirst = true;
+      length += Math.abs(
+        children![i].textContent!.length - selection!.anchorOffset
+      );
+    } else if (children![i].isEqualNode(second as Node)) {
+      metSecond = true;
+      length += Math.abs(
+        children![i].textContent!.length - selection!.focusOffset
+      );
+    } else {
+      offset += children![i].textContent!.length;
     }
   }
-
-  // for (let i = 0; i < children!.length; i++) {
-  //
-  // }
 };

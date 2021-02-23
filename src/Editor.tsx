@@ -12,8 +12,8 @@ export const Editor = () => {
       styles: [
         { style: BOLD },
         { style: BOLD },
-        { style: NONE },
         { style: BOLD },
+        { style: NONE },
         { style: NONE },
         { style: NONE },
         { style: BOLD },
