@@ -50,14 +50,16 @@ const BlockEditor = (props: BlockEditorProps) => {
           blockStyle.fontStyle = "italic";
         }
         if (block.styles[start].isUnderline) {
+          console.log(block.styles[start]);
           blockStyle.borderBottom = "0.05em solid";
         }
         if (block.styles[start].isCode) {
+          // something wrong with padding
           blockStyle.backgroundColor = "rgba(135, 131, 120, 0.15)";
           blockStyle.color = "#EB5757";
-          blockStyle.borderRadius = "3px";
-          blockStyle.fontSize = "85%";
-          blockStyle.padding = "0.2em 0.4em";
+          // blockStyle.borderRadius = "3px";
+          // blockStyle.fontSize = "85%";
+          // blockStyle.padding = "0.2em 0.4em";
         }
 
         newContent.push(
@@ -90,15 +92,48 @@ const BlockEditor = (props: BlockEditorProps) => {
   };
 
   // handlers
-  const onBold = () => {
+  const onBold = (ranges: number[], toAdd: boolean) => {
     console.log("bold");
-    const ranges = findSelection()!;
-    let newStyles: CharacterMetadata[] = [];
 
+    let newStyles: CharacterMetadata[] = [];
     for (let i = ranges[0]; i < ranges[0] + ranges[1]; i++) {
       newStyles.push({
-        isBold: true,
+        isBold: toAdd,
         isUnderline: block.styles[i].isUnderline,
+        isItalic: block.styles[i].isItalic,
+        isCode: block.styles[i].isCode,
+      });
+    }
+    onUpdateBlock(
+      block.blockID,
+      block.text,
+      block.styles
+        .slice(0, ranges[0])
+        .concat(
+          newStyles,
+          block.styles.slice(ranges[0] + ranges[1], block.styles.length)
+        )
+    );
+  };
+
+  const checkOnBold = () => {
+    const ranges = findSelection()!;
+    for (let i = ranges[0]; i < ranges[0] + ranges[1]; i++) {
+      if (block.styles[i].isBold === false) {
+        onBold(ranges, true);
+        return;
+      }
+    }
+    onBold(ranges, false);
+  };
+  const onUnderline = (ranges: number[], toAdd: boolean) => {
+    console.log("underline");
+
+    let newStyles: CharacterMetadata[] = [];
+    for (let i = ranges[0]; i < ranges[0] + ranges[1]; i++) {
+      newStyles.push({
+        isBold: block.styles[i].isBold,
+        isUnderline: toAdd,
         isItalic: block.styles[i].isItalic,
         isCode: block.styles[i].isCode,
       });
@@ -111,9 +146,93 @@ const BlockEditor = (props: BlockEditorProps) => {
         .slice(0, ranges[0])
         .concat(
           newStyles,
-          block.styles.slice(ranges[0] + ranges[1] + 1, block.styles.length)
+          block.styles.slice(ranges[0] + ranges[1], block.styles.length)
         )
     );
+  };
+
+  const checkOnUnderline = () => {
+    const ranges = findSelection()!;
+    for (let i = ranges[0]; i < ranges[0] + ranges[1]; i++) {
+      if (block.styles[i].isUnderline === false) {
+        onUnderline(ranges, true);
+        return;
+      }
+    }
+    onUnderline(ranges, false);
+  };
+  const onItalic = (ranges: number[], toAdd: boolean) => {
+    console.log("italic");
+
+    let newStyles: CharacterMetadata[] = [];
+    for (let i = ranges[0]; i < ranges[0] + ranges[1]; i++) {
+      newStyles.push({
+        isBold: block.styles[i].isBold,
+        isUnderline: block.styles[i].isUnderline,
+        isItalic: toAdd,
+        isCode: block.styles[i].isCode,
+      });
+    }
+
+    onUpdateBlock(
+      block.blockID,
+      block.text,
+      block.styles
+        .slice(0, ranges[0])
+        .concat(
+          newStyles,
+          block.styles.slice(ranges[0] + ranges[1], block.styles.length)
+        )
+    );
+  };
+
+  const checkOnItalic = () => {
+    const ranges = findSelection()!;
+    for (let i = ranges[0]; i < ranges[0] + ranges[1]; i++) {
+      if (block.styles[i].isItalic === false) {
+        onItalic(ranges, true);
+        return;
+      }
+    }
+    onItalic(ranges, false);
+  };
+
+  const onCode = (ranges: number[], toAdd: boolean) => {
+    console.log("code");
+
+    let newStyles: CharacterMetadata[] = [];
+    for (let i = ranges[0]; i < ranges[0] + ranges[1]; i++) {
+      newStyles.push({
+        isBold: block.styles[i].isBold,
+        isUnderline: block.styles[i].isUnderline,
+        isItalic: block.styles[i].isItalic,
+        isCode: toAdd,
+      });
+    }
+
+    onUpdateBlock(
+      block.blockID,
+      block.text,
+      block.styles
+        .slice(0, ranges[0])
+        .concat(
+          newStyles,
+          block.styles.slice(ranges[0] + ranges[1], block.styles.length)
+        )
+    );
+  };
+
+  const checkOnCode = () => {
+    const ranges = findSelection()!;
+    console.log(block.styles);
+    for (let i = ranges[0]; i < ranges[0] + ranges[1]; i++) {
+      if (block.styles[i].isCode === false) {
+        onCode(ranges, true);
+        return;
+      }
+    }
+    console.log("false");
+    onCode(ranges, false);
   };
 
   const onInput = (e: React.FormEvent) => {
@@ -127,33 +246,22 @@ const BlockEditor = (props: BlockEditorProps) => {
     // BOLD
     if (e.metaKey && e.key === "b") {
       e.preventDefault();
-      onBold();
+      checkOnBold();
+    } else if (e.metaKey && e.key === "u") {
+      e.preventDefault();
+      checkOnUnderline();
+    } else if (e.metaKey && e.key === "i") {
+      e.preventDefault();
+      checkOnItalic();
+    } else if (e.metaKey && e.key === "e") {
+      e.preventDefault();
+      checkOnCode();
     }
   };
 
   const onSelect = (e: React.SyntheticEvent) => {
     console.log("offset, length: " + findSelection());
   };
-
-  // const insertStyle = () => {
-  //   const i = findSelection()![0];
-
-  //   if (i !== undefined && i > props.block.text.length) {
-  //     return props.block.styles.concat(
-  //       props.block.styles[props.block.styles.length - 1]
-  //     );
-  //   } else if (i !== undefined && i === 1) {
-  //     return [props.block.styles[0]].concat(props.block.styles);
-  //   } else if (i !== undefined) {
-  //     return props.block.styles
-  //       .slice(0, i - 1)
-  //       .concat(
-  //         props.block.styles[i - 2],
-  //         props.block.styles.slice(i - 1, props.block.styles.length)
-  //       );
-  //   }
-  //   return props.block.styles;
-  // };
 
   return (
     <div
