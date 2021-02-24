@@ -1,0 +1,34 @@
+// const removeStyle = () => {
+//   const i = findSelection()![0];
+//   if (i === 0) {
+//     props.setStyles(
+//       props.block.blockID,
+//       props.block.styles.slice(i + 1, props.block.styles.length)
+//     );
+//   } else if (i === props.block.text.length) {
+//     props.setStyles(props.block.blockID, props.block.styles.slice(0, i));
+//   } else if (i !== undefined) {
+//     props.setStyles(
+//       props.block.blockID,
+//       props.block.styles
+//         .slice(0, i)
+//         .concat(props.block.styles.slice(i + 1, props.block.styles.length))
+//     );
+//   }
+// };
+
+// const removeStyles = () => {
+//   props.setStyles(props.block.blockID, []);
+// };
+
+// helpers
+// const insertStyle = (style: string[]) => {
+//   const selection = findSelection()!;
+//   let x = props.block.styles;
+
+//   for (let i = selection[0]; i < selection[0] + selection[1]; i++) {
+//     x[i].style = x[i].style.concat(...style);
+//   }
+
+//   props.setStyles(props.block.blockID, x);
+// };

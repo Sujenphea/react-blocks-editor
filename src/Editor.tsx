@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Block } from "./Block";
 import BlockEditor from "./BlockEditor";
 import { CharacterMetadata } from "./CharacterMetadata";
-import { InlineStyles } from "./InlineStyles";
 
 export const Editor = () => {
   const [blocks, setBlocks] = useState<Block[]>([
@@ -10,27 +9,86 @@ export const Editor = () => {
       blockID: "1",
       text: "helloWorld",
       styles: [
-        { style: InlineStyles.BOLD },
-        { style: InlineStyles.BOLD },
-        { style: InlineStyles.BOLD },
-        { style: InlineStyles.NONE },
-        { style: InlineStyles.NONE },
-        { style: InlineStyles.NONE },
-        { style: InlineStyles.BOLD },
-        { style: InlineStyles.NONE },
-        { style: InlineStyles.NONE },
-        { style: InlineStyles.NONE },
+        {
+          isBold: true,
+          isUnderline: false,
+          isItalic: false,
+          isCode: false,
+        },
+        {
+          isBold: true,
+          isUnderline: false,
+          isItalic: false,
+          isCode: false,
+        },
+        {
+          isBold: true,
+          isUnderline: false,
+          isItalic: false,
+          isCode: false,
+        },
+
+        {
+          isBold: false,
+          isUnderline: false,
+          isItalic: false,
+          isCode: false,
+        },
+        {
+          isBold: false,
+          isUnderline: false,
+          isItalic: false,
+          isCode: false,
+        },
+        {
+          isBold: false,
+          isUnderline: false,
+          isItalic: false,
+          isCode: false,
+        },
+
+        {
+          isBold: true,
+          isUnderline: false,
+          isItalic: false,
+          isCode: false,
+        },
+
+        {
+          isBold: false,
+          isUnderline: false,
+          isItalic: false,
+          isCode: false,
+        },
+        {
+          isBold: false,
+          isUnderline: false,
+          isItalic: false,
+          isCode: false,
+        },
+        {
+          isBold: false,
+          isUnderline: false,
+          isItalic: false,
+          isCode: false,
+        },
       ],
     },
   ]);
 
-  //   const onUpdateBlock = () => {};
-  const setStyles = (styles: CharacterMetadata[]) => {
-    console.log("setStyles");
-  };
-
-  const setText = (text: string) => {
-    console.log("setText");
+  const updateBlock = (
+    id: string,
+    text: string,
+    styles: CharacterMetadata[]
+  ) => {
+    setBlocks((blocks) => {
+      return blocks.map((block) => {
+        if (block.blockID === id) {
+          return { blockID: id, text: text, styles: styles };
+        }
+        return block;
+      });
+    });
   };
 
   return (
@@ -40,8 +98,7 @@ export const Editor = () => {
           <BlockEditor
             key={block.blockID}
             block={block}
-            setText={setText}
-            setStyles={setStyles}
+            updateBlock={updateBlock}
           />
         );
       })}
