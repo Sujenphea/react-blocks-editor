@@ -1,6 +1,9 @@
+// https://stackoverflow.com/questions/6139107/programmatically-select-text-in-a-contenteditable-html-element
 import React, { useEffect, useRef, useState } from "react";
+import { SelectionRange } from "typescript";
 import { Block } from "./Block";
 import { CharacterMetadata } from "./CharacterMetadata";
+import { SelectionRanges } from "./SelectionRanges";
 
 export type BlockEditorProps = {
   block: Block;
@@ -20,7 +23,6 @@ const BlockEditor = (props: BlockEditorProps) => {
 
   // updates content
   useEffect(() => {
-    console.log(block.styles);
     let newContent: JSX.Element[] = [];
     let dataTokenIndex = 0;
     const styleList = block.styles.map((style) => {
@@ -50,7 +52,6 @@ const BlockEditor = (props: BlockEditorProps) => {
           blockStyle.fontStyle = "italic";
         }
         if (block.styles[start].isUnderline) {
-          console.log(block.styles[start]);
           blockStyle.borderBottom = "0.05em solid";
         }
         if (block.styles[start].isCode) {
@@ -92,11 +93,11 @@ const BlockEditor = (props: BlockEditorProps) => {
   };
 
   // handlers
-  const onBold = (ranges: number[], toAdd: boolean) => {
+  const onBold = (ranges: SelectionRanges, toAdd: boolean) => {
     console.log("bold");
 
     let newStyles: CharacterMetadata[] = [];
-    for (let i = ranges[0]; i < ranges[0] + ranges[1]; i++) {
+    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       newStyles.push({
         isBold: toAdd,
         isUnderline: block.styles[i].isUnderline,
@@ -108,17 +109,23 @@ const BlockEditor = (props: BlockEditorProps) => {
       block.blockID,
       block.text,
       block.styles
-        .slice(0, ranges[0])
+        .slice(0, ranges.offset)
         .concat(
           newStyles,
-          block.styles.slice(ranges[0] + ranges[1], block.styles.length)
+          block.styles.slice(ranges.offset + ranges.length, block.styles.length)
         )
     );
+    console.log([
+      ranges.rangeStart,
+      ranges.rangeStartOffset,
+      ranges.rangeEnd,
+      ranges.rangeEndOffset,
+    ]);
   };
 
   const checkOnBold = () => {
     const ranges = findSelection()!;
-    for (let i = ranges[0]; i < ranges[0] + ranges[1]; i++) {
+    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       if (block.styles[i].isBold === false) {
         onBold(ranges, true);
         return;
@@ -126,11 +133,12 @@ const BlockEditor = (props: BlockEditorProps) => {
     }
     onBold(ranges, false);
   };
-  const onUnderline = (ranges: number[], toAdd: boolean) => {
+
+  const onUnderline = (ranges: SelectionRanges, toAdd: boolean) => {
     console.log("underline");
 
     let newStyles: CharacterMetadata[] = [];
-    for (let i = ranges[0]; i < ranges[0] + ranges[1]; i++) {
+    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       newStyles.push({
         isBold: block.styles[i].isBold,
         isUnderline: toAdd,
@@ -143,17 +151,17 @@ const BlockEditor = (props: BlockEditorProps) => {
       block.blockID,
       block.text,
       block.styles
-        .slice(0, ranges[0])
+        .slice(0, ranges.offset)
         .concat(
           newStyles,
-          block.styles.slice(ranges[0] + ranges[1], block.styles.length)
+          block.styles.slice(ranges.offset + ranges.length, block.styles.length)
         )
     );
   };
 
   const checkOnUnderline = () => {
     const ranges = findSelection()!;
-    for (let i = ranges[0]; i < ranges[0] + ranges[1]; i++) {
+    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       if (block.styles[i].isUnderline === false) {
         onUnderline(ranges, true);
         return;
@@ -161,11 +169,12 @@ const BlockEditor = (props: BlockEditorProps) => {
     }
     onUnderline(ranges, false);
   };
-  const onItalic = (ranges: number[], toAdd: boolean) => {
+
+  const onItalic = (ranges: SelectionRanges, toAdd: boolean) => {
     console.log("italic");
 
     let newStyles: CharacterMetadata[] = [];
-    for (let i = ranges[0]; i < ranges[0] + ranges[1]; i++) {
+    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       newStyles.push({
         isBold: block.styles[i].isBold,
         isUnderline: block.styles[i].isUnderline,
@@ -178,17 +187,17 @@ const BlockEditor = (props: BlockEditorProps) => {
       block.blockID,
       block.text,
       block.styles
-        .slice(0, ranges[0])
+        .slice(0, ranges.offset)
         .concat(
           newStyles,
-          block.styles.slice(ranges[0] + ranges[1], block.styles.length)
+          block.styles.slice(ranges.offset + ranges.length, block.styles.length)
         )
     );
   };
 
   const checkOnItalic = () => {
     const ranges = findSelection()!;
-    for (let i = ranges[0]; i < ranges[0] + ranges[1]; i++) {
+    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       if (block.styles[i].isItalic === false) {
         onItalic(ranges, true);
         return;
@@ -197,11 +206,11 @@ const BlockEditor = (props: BlockEditorProps) => {
     onItalic(ranges, false);
   };
 
-  const onCode = (ranges: number[], toAdd: boolean) => {
+  const onCode = (ranges: SelectionRanges, toAdd: boolean) => {
     console.log("code");
 
     let newStyles: CharacterMetadata[] = [];
-    for (let i = ranges[0]; i < ranges[0] + ranges[1]; i++) {
+    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       newStyles.push({
         isBold: block.styles[i].isBold,
         isUnderline: block.styles[i].isUnderline,
@@ -214,25 +223,24 @@ const BlockEditor = (props: BlockEditorProps) => {
       block.blockID,
       block.text,
       block.styles
-        .slice(0, ranges[0])
+        .slice(0, ranges.offset)
         .concat(
           newStyles,
-          block.styles.slice(ranges[0] + ranges[1], block.styles.length)
+          block.styles.slice(ranges.offset + ranges.length, block.styles.length)
         )
     );
   };
 
   const checkOnCode = () => {
     const ranges = findSelection()!;
-    console.log(block.styles);
-    for (let i = ranges[0]; i < ranges[0] + ranges[1]; i++) {
+    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       if (block.styles[i].isCode === false) {
         onCode(ranges, true);
         return;
       }
     }
-    console.log("false");
     onCode(ranges, false);
+    changeSelection(ranges);
   };
 
   const onInput = (e: React.FormEvent) => {
@@ -260,7 +268,17 @@ const BlockEditor = (props: BlockEditorProps) => {
   };
 
   const onSelect = (e: React.SyntheticEvent) => {
-    console.log("offset, length: " + findSelection());
+    // console.log("offset, length: " + findSelection());
+  };
+
+  const changeSelection = (ranges: SelectionRanges) => {
+    let range = document.createRange();
+
+    range.setStart(ranges.rangeStart!, ranges.rangeStartOffset);
+    range.setEnd(ranges.rangeEnd!, ranges.rangeEndOffset);
+
+    ranges.selection!.removeAllRanges();
+    ranges.selection!.addRange(range);
   };
 
   return (
@@ -308,7 +326,7 @@ const findRangesImmutable = (
 };
 
 // find selection range
-const findSelection = () => {
+const findSelection: () => SelectionRanges = () => {
   const selection = window.getSelection();
 
   const first = selection?.anchorNode?.parentNode;
@@ -324,35 +342,68 @@ const findSelection = () => {
 
   for (let i = 0; i < children!.length; i++) {
     if (same) {
+      // within same span
       if (children![i].isEqualNode(first as Node)) {
-        return [
-          offset + Math.min(selection!.anchorOffset, selection!.focusOffset),
-          Math.abs(selection!.anchorOffset - selection!.focusOffset),
-        ];
+        return {
+          offset:
+            offset + Math.min(selection!.anchorOffset, selection!.focusOffset),
+          length: Math.abs(selection!.anchorOffset - selection!.focusOffset),
+          rangeStart: selection!.anchorNode,
+          rangeStartOffset: selection!.anchorOffset,
+          rangeEnd: selection!.focusNode,
+          rangeEndOffset: selection!.focusOffset,
+          selection: selection,
+        };
+        // return [
+        //   offset + Math.min(selection!.anchorOffset, selection!.focusOffset),
+        //   Math.abs(selection!.anchorOffset - selection!.focusOffset),
+        // ];
       }
       offset += children![i].textContent!.length;
     } else if (metFirst) {
+      // forwards
       if (children![i].isEqualNode(second as Node)) {
-        return [
-          offset + selection!.anchorOffset,
-          length + selection!.focusOffset,
-        ];
+        return {
+          offset: offset + selection!.anchorOffset,
+          length: length + selection!.focusOffset,
+          rangeStart: selection!.anchorNode,
+          rangeStartOffset: selection!.anchorOffset,
+          rangeEnd: selection!.focusNode,
+          rangeEndOffset: selection!.focusOffset,
+          selection: selection,
+        };
+        // return [
+        //   offset + selection!.anchorOffset,
+        //   length + selection!.focusOffset,
+        // ];
       }
       length += children![i].textContent!.length;
     } else if (metSecond) {
+      // backwards
       if (children![i].isEqualNode(first as Node)) {
-        return [
-          offset + selection!.focusOffset,
-          length + selection!.anchorOffset,
-        ];
+        return {
+          offset: offset + selection!.focusOffset,
+          length: length + selection!.anchorOffset,
+          rangeStart: selection!.focusNode,
+          rangeStartOffset: selection!.focusOffset,
+          rangeEnd: selection!.anchorNode,
+          rangeEndOffset: selection!.anchorOffset,
+          selection: selection,
+        };
+        // return [
+        //   offset + selection!.focusOffset,
+        //   length + selection!.anchorOffset,
+        // ];
       }
       length += children![i].textContent!.length;
     } else if (children![i].isEqualNode(first as Node)) {
+      // first node met (first occurence)
       metFirst = true;
       length += Math.abs(
         children![i].textContent!.length - selection!.anchorOffset
       );
     } else if (children![i].isEqualNode(second as Node)) {
+      // second node met (first occurence)
       metSecond = true;
       length += Math.abs(
         children![i].textContent!.length - selection!.focusOffset
@@ -361,4 +412,14 @@ const findSelection = () => {
       offset += children![i].textContent!.length;
     }
   }
+
+  return {
+    offset: 0,
+    length: 0,
+    rangeStart: null,
+    rangeStartOffset: 0,
+    rangeEnd: null,
+    rangeEndOffset: 0,
+    selection: selection,
+  };
 };

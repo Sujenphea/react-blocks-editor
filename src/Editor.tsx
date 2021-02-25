@@ -10,25 +10,6 @@ export const Editor = () => {
       text: "helloWorld",
       styles: [
         {
-          isBold: true,
-          isUnderline: false,
-          isItalic: false,
-          isCode: false,
-        },
-        {
-          isBold: true,
-          isUnderline: false,
-          isItalic: false,
-          isCode: false,
-        },
-        {
-          isBold: true,
-          isUnderline: false,
-          isItalic: false,
-          isCode: false,
-        },
-
-        {
           isBold: false,
           isUnderline: false,
           isItalic: false,
@@ -48,7 +29,26 @@ export const Editor = () => {
         },
 
         {
-          isBold: true,
+          isBold: false,
+          isUnderline: false,
+          isItalic: false,
+          isCode: false,
+        },
+        {
+          isBold: false,
+          isUnderline: false,
+          isItalic: false,
+          isCode: false,
+        },
+        {
+          isBold: false,
+          isUnderline: false,
+          isItalic: false,
+          isCode: false,
+        },
+
+        {
+          isBold: false,
           isUnderline: false,
           isItalic: false,
           isCode: false,
