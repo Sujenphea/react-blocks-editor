@@ -1,6 +1,7 @@
 // https://stackoverflow.com/questions/6139107/programmatically-select-text-in-a-contenteditable-html-element
+
+// todo: change styles during deletion?
 import React, { useEffect, useRef, useState } from "react";
-import { SelectionRange } from "typescript";
 import { Block } from "./Block";
 import { CharacterMetadata } from "./CharacterMetadata";
 import { SelectionRanges } from "./SelectionRanges";
@@ -12,22 +13,40 @@ export type BlockEditorProps = {
 
 const BlockEditor = (props: BlockEditorProps) => {
   const [content, setContent] = useState(<div></div>);
-
   const [block, setBlock] = useState<Block>({
     blockID: "",
     text: "",
     styles: [],
   });
+  const [ranges, setRanges] = useState<SelectionRanges>({
+    offset: 0,
+    length: 0,
+  });
 
   const mainRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (runAfterContentSet.current !== null) {
+      runAfterContentSet.current();
+      runAfterContentSet.current = null;
+    }
+  }, [content]);
+
+  const runAfterContentSet = useRef<(() => void) | null>(null);
 
   // updates content
   useEffect(() => {
     let newContent: JSX.Element[] = [];
-    let dataTokenIndex = 0;
+    let dataTokenIndex = 1;
     const styleList = block.styles.map((style) => {
       return JSON.stringify(style);
     });
+
+    let startId = "";
+    let endId = "";
+    let startOffset = -1;
+    let endOffset = -1;
+    const rangeEnd = ranges.offset + ranges.length - 1;
 
     findRangesImmutable(
       styleList,
@@ -44,6 +63,16 @@ const BlockEditor = (props: BlockEditorProps) => {
           fontSize: "initial",
           padding: "0",
         };
+
+        if (start <= ranges.offset && end > ranges.offset) {
+          startId = "h".repeat(dataTokenIndex);
+          startOffset = ranges.offset - start;
+        }
+
+        if (start <= rangeEnd && end > rangeEnd) {
+          endId = "h".repeat(dataTokenIndex);
+          endOffset = rangeEnd - start;
+        }
 
         if (block.styles[start].isBold) {
           blockStyle.fontWeight = 600;
@@ -64,7 +93,11 @@ const BlockEditor = (props: BlockEditorProps) => {
         }
 
         newContent.push(
-          <span key={dataTokenIndex} style={blockStyle}>
+          <span
+            key={dataTokenIndex}
+            style={blockStyle}
+            id={"h".repeat(dataTokenIndex)}
+          >
             {block.text.slice(start, end)}
           </span>
         );
@@ -73,6 +106,9 @@ const BlockEditor = (props: BlockEditorProps) => {
       }
     );
     setContent(<div>{newContent}</div>);
+    runAfterContentSet.current = () => {
+      revertSelection(startId, endId, startOffset, endOffset);
+    };
   }, [block]);
 
   // updates internal state
@@ -93,11 +129,11 @@ const BlockEditor = (props: BlockEditorProps) => {
   };
 
   // handlers
-  const onBold = (ranges: SelectionRanges, toAdd: boolean) => {
+  const onBold = (offsetLength: number[], toAdd: boolean) => {
     console.log("bold");
 
     let newStyles: CharacterMetadata[] = [];
-    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
+    for (let i = offsetLength[0]; i < offsetLength[0] + offsetLength[1]; i++) {
       newStyles.push({
         isBold: toAdd,
         isUnderline: block.styles[i].isUnderline,
@@ -109,36 +145,34 @@ const BlockEditor = (props: BlockEditorProps) => {
       block.blockID,
       block.text,
       block.styles
-        .slice(0, ranges.offset)
+        .slice(0, offsetLength[0])
         .concat(
           newStyles,
-          block.styles.slice(ranges.offset + ranges.length, block.styles.length)
+          block.styles.slice(
+            offsetLength[0] + offsetLength[1],
+            block.styles.length
+          )
         )
     );
-    console.log([
-      ranges.rangeStart,
-      ranges.rangeStartOffset,
-      ranges.rangeEnd,
-      ranges.rangeEndOffset,
-    ]);
   };
 
   const checkOnBold = () => {
-    const ranges = findSelection()!;
-    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
+    const offsetLength = findSelection()!;
+
+    for (let i = offsetLength[0]; i < offsetLength[0] + offsetLength[1]; i++) {
       if (block.styles[i].isBold === false) {
-        onBold(ranges, true);
+        onBold(offsetLength, true);
         return;
       }
     }
-    onBold(ranges, false);
+    onBold(offsetLength, false);
   };
 
-  const onUnderline = (ranges: SelectionRanges, toAdd: boolean) => {
+  const onUnderline = (offsetLength: number[], toAdd: boolean) => {
     console.log("underline");
 
     let newStyles: CharacterMetadata[] = [];
-    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
+    for (let i = offsetLength[0]; i < offsetLength[0] + offsetLength[1]; i++) {
       newStyles.push({
         isBold: block.styles[i].isBold,
         isUnderline: toAdd,
@@ -151,30 +185,33 @@ const BlockEditor = (props: BlockEditorProps) => {
       block.blockID,
       block.text,
       block.styles
-        .slice(0, ranges.offset)
+        .slice(0, offsetLength[0])
         .concat(
           newStyles,
-          block.styles.slice(ranges.offset + ranges.length, block.styles.length)
+          block.styles.slice(
+            offsetLength[0] + offsetLength[1],
+            block.styles.length
+          )
         )
     );
   };
 
   const checkOnUnderline = () => {
-    const ranges = findSelection()!;
-    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
+    const offsetLength = findSelection()!;
+    for (let i = offsetLength[0]; i < offsetLength[0] + offsetLength[1]; i++) {
       if (block.styles[i].isUnderline === false) {
-        onUnderline(ranges, true);
+        onUnderline(offsetLength, true);
         return;
       }
     }
-    onUnderline(ranges, false);
+    onUnderline(offsetLength, false);
   };
 
-  const onItalic = (ranges: SelectionRanges, toAdd: boolean) => {
+  const onItalic = (offsetLength: number[], toAdd: boolean) => {
     console.log("italic");
 
     let newStyles: CharacterMetadata[] = [];
-    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
+    for (let i = offsetLength[0]; i < offsetLength[0] + offsetLength[1]; i++) {
       newStyles.push({
         isBold: block.styles[i].isBold,
         isUnderline: block.styles[i].isUnderline,
@@ -187,30 +224,33 @@ const BlockEditor = (props: BlockEditorProps) => {
       block.blockID,
       block.text,
       block.styles
-        .slice(0, ranges.offset)
+        .slice(0, offsetLength[0])
         .concat(
           newStyles,
-          block.styles.slice(ranges.offset + ranges.length, block.styles.length)
+          block.styles.slice(
+            offsetLength[0] + offsetLength[1],
+            block.styles.length
+          )
         )
     );
   };
 
   const checkOnItalic = () => {
-    const ranges = findSelection()!;
-    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
+    const offsetLength = findSelection()!;
+    for (let i = offsetLength[0]; i < offsetLength[0] + offsetLength[1]; i++) {
       if (block.styles[i].isItalic === false) {
-        onItalic(ranges, true);
+        onItalic(offsetLength, true);
         return;
       }
     }
-    onItalic(ranges, false);
+    onItalic(offsetLength, false);
   };
 
-  const onCode = (ranges: SelectionRanges, toAdd: boolean) => {
+  const onCode = (offsetLength: number[], toAdd: boolean) => {
     console.log("code");
 
     let newStyles: CharacterMetadata[] = [];
-    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
+    for (let i = offsetLength[0]; i < offsetLength[0] + offsetLength[1]; i++) {
       newStyles.push({
         isBold: block.styles[i].isBold,
         isUnderline: block.styles[i].isUnderline,
@@ -223,28 +263,31 @@ const BlockEditor = (props: BlockEditorProps) => {
       block.blockID,
       block.text,
       block.styles
-        .slice(0, ranges.offset)
+        .slice(0, offsetLength[0])
         .concat(
           newStyles,
-          block.styles.slice(ranges.offset + ranges.length, block.styles.length)
+          block.styles.slice(
+            offsetLength[0] + offsetLength[1],
+            block.styles.length
+          )
         )
     );
   };
 
   const checkOnCode = () => {
-    const ranges = findSelection()!;
-    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
+    const offsetLength = findSelection()!;
+    for (let i = offsetLength[0]; i < offsetLength[0] + offsetLength[1]; i++) {
       if (block.styles[i].isCode === false) {
-        onCode(ranges, true);
+        onCode(offsetLength, true);
         return;
       }
     }
-    onCode(ranges, false);
-    changeSelection(ranges);
+    onCode(offsetLength, false);
   };
 
   const onInput = (e: React.FormEvent) => {
     const input = e.currentTarget.textContent;
+    console.log(input?.length, block.text.length);
     if (input) {
       onUpdateBlock(block.blockID, input, block.styles);
     }
@@ -267,18 +310,106 @@ const BlockEditor = (props: BlockEditorProps) => {
     }
   };
 
-  const onSelect = (e: React.SyntheticEvent) => {
-    // console.log("offset, length: " + findSelection());
+  const revertSelection = (
+    startId: string,
+    endId: string,
+    startOffset: number,
+    endOffset: number
+  ) => {
+    if (startOffset === -1 || endOffset === -1) {
+      console.log("no selection");
+    } else {
+      let range = document.createRange();
+      const selection = window.getSelection();
+
+      const el = document.getElementById(startId);
+      const el2 = document.getElementById(endId);
+      range.setStart(el!.childNodes[0], startOffset);
+      range.setEnd(el2!.childNodes[0], endOffset + 1);
+      selection!.removeAllRanges();
+      selection!.addRange(range);
+    }
   };
 
-  const changeSelection = (ranges: SelectionRanges) => {
-    let range = document.createRange();
+  // find selection range
+  const findSelection: () => number[] = () => {
+    const selection = window.getSelection();
+    const first = selection?.anchorNode?.parentNode;
+    const second = selection?.focusNode?.parentNode;
+    const parent = selection?.anchorNode?.parentNode?.parentNode;
+    const children = parent?.childNodes;
 
-    range.setStart(ranges.rangeStart!, ranges.rangeStartOffset);
-    range.setEnd(ranges.rangeEnd!, ranges.rangeEndOffset);
+    let metFirst = false;
+    let metSecond = false;
+    const same = first === second;
+    let offset = 0;
+    let length = 0;
 
-    ranges.selection!.removeAllRanges();
-    ranges.selection!.addRange(range);
+    for (let i = 0; i < children!.length; i++) {
+      if (same) {
+        // within same span
+        if (children![i].isEqualNode(first as Node)) {
+          const curO =
+            offset + Math.min(selection!.anchorOffset, selection!.focusOffset);
+          const curL = Math.abs(
+            selection!.anchorOffset - selection!.focusOffset
+          );
+
+          setRanges((range) => ({
+            ...range,
+            offset: curO,
+            length: curL,
+          }));
+
+          return [curO, curL];
+        }
+        offset += children![i].textContent!.length;
+      } else if (metFirst) {
+        // forwards
+        if (children![i].isEqualNode(second as Node)) {
+          const curO = offset + selection!.anchorOffset;
+          const curL = length + selection!.focusOffset;
+
+          setRanges((range) => ({
+            ...range,
+            offset: curO,
+            length: curL,
+          }));
+
+          return [curO, curL];
+        }
+        length += children![i].textContent!.length;
+      } else if (metSecond) {
+        // backwards
+        if (children![i].isEqualNode(first as Node)) {
+          const curO = offset + selection!.focusOffset;
+          const curL = length + selection!.anchorOffset;
+          setRanges((range) => ({
+            ...range,
+            offset: curO,
+            length: curL,
+          }));
+
+          return [curO, curL];
+        }
+        length += children![i].textContent!.length;
+      } else if (children![i].isEqualNode(first as Node)) {
+        // first node met (first occurence)
+        metFirst = true;
+        length += Math.abs(
+          children![i].textContent!.length - selection!.anchorOffset
+        );
+      } else if (children![i].isEqualNode(second as Node)) {
+        // second node met (first occurence)
+        metSecond = true;
+        length += Math.abs(
+          children![i].textContent!.length - selection!.focusOffset
+        );
+      } else {
+        offset += children![i].textContent!.length;
+      }
+    }
+    return [0, 0];
   };
 
   return (
@@ -287,7 +418,6 @@ const BlockEditor = (props: BlockEditorProps) => {
       contentEditable={true}
       onInput={onInput}
       onKeyDown={onKeyDown}
-      onSelect={onSelect}
       ref={mainRef}
     >
       {content}
@@ -323,103 +453,4 @@ const findRangesImmutable = (
   if (filterFn(haystack[haystack.length - 1])) {
     foundFn(cursor, haystack.length);
   }
-};
-
-// find selection range
-const findSelection: () => SelectionRanges = () => {
-  const selection = window.getSelection();
-
-  const first = selection?.anchorNode?.parentNode;
-  const second = selection?.focusNode?.parentNode;
-  const parent = selection?.anchorNode?.parentNode?.parentNode;
-  const children = parent?.childNodes;
-
-  let metFirst = false;
-  let metSecond = false;
-  const same = first === second;
-  let offset = 0;
-  let length = 0;
-
-  for (let i = 0; i < children!.length; i++) {
-    if (same) {
-      // within same span
-      if (children![i].isEqualNode(first as Node)) {
-        return {
-          offset:
-            offset + Math.min(selection!.anchorOffset, selection!.focusOffset),
-          length: Math.abs(selection!.anchorOffset - selection!.focusOffset),
-          rangeStart: selection!.anchorNode,
-          rangeStartOffset: selection!.anchorOffset,
-          rangeEnd: selection!.focusNode,
-          rangeEndOffset: selection!.focusOffset,
-          selection: selection,
-        };
-        // return [
-        //   offset + Math.min(selection!.anchorOffset, selection!.focusOffset),
-        //   Math.abs(selection!.anchorOffset - selection!.focusOffset),
-        // ];
-      }
-      offset += children![i].textContent!.length;
-    } else if (metFirst) {
-      // forwards
-      if (children![i].isEqualNode(second as Node)) {
-        return {
-          offset: offset + selection!.anchorOffset,
-          length: length + selection!.focusOffset,
-          rangeStart: selection!.anchorNode,
-          rangeStartOffset: selection!.anchorOffset,
-          rangeEnd: selection!.focusNode,
-          rangeEndOffset: selection!.focusOffset,
-          selection: selection,
-        };
-        // return [
-        //   offset + selection!.anchorOffset,
-        //   length + selection!.focusOffset,
-        // ];
-      }
-      length += children![i].textContent!.length;
-    } else if (metSecond) {
-      // backwards
-      if (children![i].isEqualNode(first as Node)) {
-        return {
-          offset: offset + selection!.focusOffset,
-          length: length + selection!.anchorOffset,
-          rangeStart: selection!.focusNode,
-          rangeStartOffset: selection!.focusOffset,
-          rangeEnd: selection!.anchorNode,
-          rangeEndOffset: selection!.anchorOffset,
-          selection: selection,
-        };
-        // return [
-        //   offset + selection!.focusOffset,
-        //   length + selection!.anchorOffset,
-        // ];
-      }
-      length += children![i].textContent!.length;
-    } else if (children![i].isEqualNode(first as Node)) {
-      // first node met (first occurence)
-      metFirst = true;
-      length += Math.abs(
-        children![i].textContent!.length - selection!.anchorOffset
-      );
-    } else if (children![i].isEqualNode(second as Node)) {
-      // second node met (first occurence)
-      metSecond = true;
-      length += Math.abs(
-        children![i].textContent!.length - selection!.focusOffset
-      );
-    } else {
-      offset += children![i].textContent!.length;
-    }
-  }
-
-  return {
-    offset: 0,
-    length: 0,
-    rangeStart: null,
-    rangeStartOffset: 0,
-    rangeEnd: null,
-    rangeEndOffset: 0,
-    selection: selection,
-  };
 };
