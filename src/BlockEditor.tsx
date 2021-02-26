@@ -22,6 +22,7 @@ const BlockEditor = (props: BlockEditorProps) => {
     offset: 0,
     length: 0,
   });
+  const [update, setUpdate] = useState(true);
 
   const mainRef = useRef<HTMLDivElement>(null);
 
@@ -36,6 +37,11 @@ const BlockEditor = (props: BlockEditorProps) => {
 
   // updates content
   useEffect(() => {
+    if (!update) {
+      setUpdate(!update);
+      return;
+    }
+
     let newContent: JSX.Element[] = [];
     let dataTokenIndex = 1;
     const styleList = block.styles.map((style) => {
@@ -287,9 +293,29 @@ const BlockEditor = (props: BlockEditorProps) => {
 
   const onInput = (e: React.FormEvent) => {
     const input = e.currentTarget.textContent;
-    console.log(input?.length, block.text.length);
-    if (input) {
-      onUpdateBlock(block.blockID, input, block.styles);
+    const offsetLength = findSelection();
+
+    if (input && input!.length > block.text.length) {
+      console.log("insert");
+
+      const newStyles = block.styles
+        .slice(0, offsetLength[0] - 1)
+        .concat(
+          block.styles[offsetLength[0] - 2],
+          block.styles.slice(offsetLength[0] - 1, block.styles.length)
+        );
+
+      setUpdate(false);
+      onUpdateBlock(block.blockID, input, newStyles);
+    } else if (input && input!.length < block.text.length) {
+      console.log("delete");
+
+      const newStyles = block.styles
+        .slice(0, offsetLength[0])
+        .concat(block.styles.slice(offsetLength[0] + 1, block.styles.length));
+
+      setUpdate(false);
+      onUpdateBlock(block.blockID, input, newStyles);
     }
   };
 
