@@ -1,6 +1,10 @@
 // https://stackoverflow.com/questions/6139107/programmatically-select-text-in-a-contenteditable-html-element
 
-// todo: change styles during deletion?
+// html updating content for insertion/deletion
+// reactjs.org/docs/react-dom-server.html#rendertostaticmarkup
+// https://github.com/facebook/react/issues/1466
+
+import ReactDOMServer from "react-dom/server";
 import React, { useEffect, useRef, useState } from "react";
 import { Block } from "./Block";
 import { CharacterMetadata } from "./CharacterMetadata";
@@ -12,7 +16,7 @@ export type BlockEditorProps = {
 };
 
 const BlockEditor = (props: BlockEditorProps) => {
-  const [content, setContent] = useState(<div></div>);
+  const [content, setContent] = useState("<div></div>");
   const [block, setBlock] = useState<Block>({
     blockID: "",
     text: "",
@@ -22,9 +26,6 @@ const BlockEditor = (props: BlockEditorProps) => {
     offset: 0,
     length: 0,
   });
-  const [update, setUpdate] = useState(true);
-
-  const mainRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (runAfterContentSet.current !== null) {
@@ -37,11 +38,6 @@ const BlockEditor = (props: BlockEditorProps) => {
 
   // updates content
   useEffect(() => {
-    if (!update) {
-      setUpdate(!update);
-      return;
-    }
-
     let newContent: JSX.Element[] = [];
     let dataTokenIndex = 1;
     const styleList = block.styles.map((style) => {
@@ -111,7 +107,13 @@ const BlockEditor = (props: BlockEditorProps) => {
         dataTokenIndex += 1;
       }
     );
-    setContent(<div>{newContent}</div>);
+
+    let newContentStatic = ReactDOMServer.renderToStaticMarkup(
+      <div>{newContent}</div>
+    );
+
+    setContent(newContentStatic);
+
     runAfterContentSet.current = () => {
       revertSelection(startId, endId, startOffset, endOffset);
     };
@@ -305,7 +307,6 @@ const BlockEditor = (props: BlockEditorProps) => {
           block.styles.slice(offsetLength[0] - 1, block.styles.length)
         );
 
-      setUpdate(false);
       onUpdateBlock(block.blockID, input, newStyles);
     } else if (input && input!.length < block.text.length) {
       console.log("delete");
@@ -314,7 +315,6 @@ const BlockEditor = (props: BlockEditorProps) => {
         .slice(0, offsetLength[0])
         .concat(block.styles.slice(offsetLength[0] + 1, block.styles.length));
 
-      setUpdate(false);
       onUpdateBlock(block.blockID, input, newStyles);
     }
   };
@@ -444,10 +444,8 @@ const BlockEditor = (props: BlockEditorProps) => {
       contentEditable={true}
       onInput={onInput}
       onKeyDown={onKeyDown}
-      ref={mainRef}
-    >
-      {content}
-    </div>
+      dangerouslySetInnerHTML={{ __html: content }}
+    />
   );
 };
 
