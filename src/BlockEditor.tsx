@@ -1,4 +1,4 @@
-// https://stackoverflow.com/questions/6139107/programmatically-select-text-in-a-contenteditable-html-element
+/// https://stackoverflow.com/questions/6139107/programmatically-select-text-in-a-contenteditable-html-element
 
 // html updating content for insertion/deletion
 // reactjs.org/docs/react-dom-server.html#rendertostaticmarkup
@@ -6,7 +6,7 @@
 
 import ReactDOMServer from "react-dom/server";
 import React, { useEffect, useRef, useState } from "react";
-import { Block } from "./Block";
+import { Block, BlockState } from "./Block";
 import { CharacterMetadata } from "./CharacterMetadata";
 import { SelectionRanges } from "./SelectionRanges";
 
@@ -27,6 +27,7 @@ const BlockEditor = (props: BlockEditorProps) => {
     length: 0,
   });
   const [backSpace, setBackspace] = useState(false);
+  const [blockState, setBlockState] = useState<BlockState>("None");
 
   useEffect(() => {
     if (runAfterContentSet.current !== null) {
@@ -72,7 +73,7 @@ const BlockEditor = (props: BlockEditorProps) => {
           startOffset = ranges.offset - start;
         }
 
-        if (start <= rangeEnd && end > rangeEnd) {
+        if (start <= rangeEnd && end >= rangeEnd) {
           endId = "h".repeat(dataTokenIndex);
           endOffset = rangeEnd - start;
         }
@@ -116,7 +117,24 @@ const BlockEditor = (props: BlockEditorProps) => {
     setContent(newContentStatic);
 
     runAfterContentSet.current = () => {
-      revertSelection(startId, endId, startOffset, endOffset);
+      switch (blockState) {
+        case "DeleteMul":
+          revertSelectionInsert(startId, startOffset);
+          setBlockState("None");
+          break;
+        case "DeleteOne":
+          revertSelectionDeletion(endId, endOffset);
+          setBlockState("None");
+          break;
+        case "Insert":
+          revertSelectionInsert(startId, startOffset + 1);
+          setBlockState("None");
+          break;
+        case "Style":
+          revertSelection(startId, endId, startOffset, endOffset);
+          setBlockState("None");
+          break;
+      }
     };
   }, [block]);
 
@@ -281,8 +299,8 @@ const BlockEditor = (props: BlockEditorProps) => {
     const input = e.currentTarget.textContent;
 
     if (!input) {
-      console.log("not input");
       onUpdateBlock(block.blockID, "", []);
+      setBackspace(false);
       return;
     }
 
@@ -292,6 +310,7 @@ const BlockEditor = (props: BlockEditorProps) => {
 
       if (ranges.length > 0) {
         // only batch deletion here
+        setBlockState("DeleteMul");
         const newStyles = block.styles
           .slice(0, ranges.offset)
           .concat(
@@ -300,17 +319,15 @@ const BlockEditor = (props: BlockEditorProps) => {
               block.styles.length
             )
           );
-
-        console.log(newStyles);
-
         onUpdateBlock(block.blockID, input, newStyles);
         return;
       }
 
+      setBlockState("DeleteOne");
       const newStyles = block.styles
         .slice(0, ranges.offset - 1)
         .concat(block.styles.slice(ranges.offset, block.styles.length));
-      console.log(newStyles);
+
       onUpdateBlock(block.blockID, input, newStyles);
       return;
     }
@@ -323,6 +340,7 @@ const BlockEditor = (props: BlockEditorProps) => {
     };
 
     console.log("insert");
+    setBlockState("Insert");
     if (ranges.offset === 0) {
       const newStyles = [defaultStyle].concat(
         block.styles.slice(ranges.offset + ranges.length, block.styles.length)
@@ -345,15 +363,19 @@ const BlockEditor = (props: BlockEditorProps) => {
     // BOLD
     if (e.metaKey && e.key === "b") {
       e.preventDefault();
+      setBlockState("Style");
       checkOnBold();
     } else if (e.metaKey && e.key === "u") {
       e.preventDefault();
+      setBlockState("Style");
       checkOnUnderline();
     } else if (e.metaKey && e.key === "i") {
       e.preventDefault();
+      setBlockState("Style");
       checkOnItalic();
     } else if (e.metaKey && e.key === "e") {
       e.preventDefault();
+      setBlockState("Style");
       checkOnCode();
     } else if (e.key === "Backspace") {
       setBackspace(true);
@@ -380,6 +402,28 @@ const BlockEditor = (props: BlockEditorProps) => {
       const el2 = document.getElementById(endId);
       range.setStart(el!.childNodes[0], startOffset);
       range.setEnd(el2!.childNodes[0], endOffset + 1);
+      selection!.removeAllRanges();
+      selection!.addRange(range);
+    }
+  };
+
+  const revertSelectionInsert = (startId: string, startOffset: number) => {
+    let range = document.createRange();
+    const selection = window.getSelection();
+
+    const el = document.getElementById(startId);
+    range.setStart(el!.childNodes[0], startOffset);
+    selection!.removeAllRanges();
+    selection!.addRange(range);
+  };
+
+  const revertSelectionDeletion = (endId: string, endOffset: number) => {
+    let range = document.createRange();
+    const selection = window.getSelection();
+
+    const el = document.getElementById(endId);
+    if (el) {
+      range.setStart(el!.childNodes[0], endOffset);
       selection!.removeAllRanges();
       selection!.addRange(range);
     }
