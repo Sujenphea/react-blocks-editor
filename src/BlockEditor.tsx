@@ -26,6 +26,7 @@ const BlockEditor = (props: BlockEditorProps) => {
     offset: 0,
     length: 0,
   });
+  const [backSpace, setBackspace] = useState(false);
 
   useEffect(() => {
     if (runAfterContentSet.current !== null) {
@@ -137,11 +138,11 @@ const BlockEditor = (props: BlockEditorProps) => {
   };
 
   // handlers
-  const onBold = (offsetLength: number[], toAdd: boolean) => {
+  const onBold = (toAdd: boolean) => {
     console.log("bold");
 
     let newStyles: CharacterMetadata[] = [];
-    for (let i = offsetLength[0]; i < offsetLength[0] + offsetLength[1]; i++) {
+    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       newStyles.push({
         isBold: toAdd,
         isUnderline: block.styles[i].isUnderline,
@@ -153,34 +154,29 @@ const BlockEditor = (props: BlockEditorProps) => {
       block.blockID,
       block.text,
       block.styles
-        .slice(0, offsetLength[0])
+        .slice(0, ranges.offset)
         .concat(
           newStyles,
-          block.styles.slice(
-            offsetLength[0] + offsetLength[1],
-            block.styles.length
-          )
+          block.styles.slice(ranges.offset + ranges.length, block.styles.length)
         )
     );
   };
 
   const checkOnBold = () => {
-    const offsetLength = findSelection()!;
-
-    for (let i = offsetLength[0]; i < offsetLength[0] + offsetLength[1]; i++) {
+    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       if (block.styles[i].isBold === false) {
-        onBold(offsetLength, true);
+        onBold(true);
         return;
       }
     }
-    onBold(offsetLength, false);
+    onBold(false);
   };
 
-  const onUnderline = (offsetLength: number[], toAdd: boolean) => {
+  const onUnderline = (toAdd: boolean) => {
     console.log("underline");
 
     let newStyles: CharacterMetadata[] = [];
-    for (let i = offsetLength[0]; i < offsetLength[0] + offsetLength[1]; i++) {
+    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       newStyles.push({
         isBold: block.styles[i].isBold,
         isUnderline: toAdd,
@@ -193,33 +189,29 @@ const BlockEditor = (props: BlockEditorProps) => {
       block.blockID,
       block.text,
       block.styles
-        .slice(0, offsetLength[0])
+        .slice(0, ranges.offset)
         .concat(
           newStyles,
-          block.styles.slice(
-            offsetLength[0] + offsetLength[1],
-            block.styles.length
-          )
+          block.styles.slice(ranges.offset + ranges.length, block.styles.length)
         )
     );
   };
 
   const checkOnUnderline = () => {
-    const offsetLength = findSelection()!;
-    for (let i = offsetLength[0]; i < offsetLength[0] + offsetLength[1]; i++) {
+    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       if (block.styles[i].isUnderline === false) {
-        onUnderline(offsetLength, true);
+        onUnderline(true);
         return;
       }
     }
-    onUnderline(offsetLength, false);
+    onUnderline(false);
   };
 
-  const onItalic = (offsetLength: number[], toAdd: boolean) => {
+  const onItalic = (toAdd: boolean) => {
     console.log("italic");
 
     let newStyles: CharacterMetadata[] = [];
-    for (let i = offsetLength[0]; i < offsetLength[0] + offsetLength[1]; i++) {
+    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       newStyles.push({
         isBold: block.styles[i].isBold,
         isUnderline: block.styles[i].isUnderline,
@@ -232,33 +224,29 @@ const BlockEditor = (props: BlockEditorProps) => {
       block.blockID,
       block.text,
       block.styles
-        .slice(0, offsetLength[0])
+        .slice(0, ranges.offset)
         .concat(
           newStyles,
-          block.styles.slice(
-            offsetLength[0] + offsetLength[1],
-            block.styles.length
-          )
+          block.styles.slice(ranges.offset + ranges.length, block.styles.length)
         )
     );
   };
 
   const checkOnItalic = () => {
-    const offsetLength = findSelection()!;
-    for (let i = offsetLength[0]; i < offsetLength[0] + offsetLength[1]; i++) {
+    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       if (block.styles[i].isItalic === false) {
-        onItalic(offsetLength, true);
+        onItalic(true);
         return;
       }
     }
-    onItalic(offsetLength, false);
+    onItalic(false);
   };
 
-  const onCode = (offsetLength: number[], toAdd: boolean) => {
+  const onCode = (toAdd: boolean) => {
     console.log("code");
 
     let newStyles: CharacterMetadata[] = [];
-    for (let i = offsetLength[0]; i < offsetLength[0] + offsetLength[1]; i++) {
+    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       newStyles.push({
         isBold: block.styles[i].isBold,
         isUnderline: block.styles[i].isUnderline,
@@ -271,52 +259,86 @@ const BlockEditor = (props: BlockEditorProps) => {
       block.blockID,
       block.text,
       block.styles
-        .slice(0, offsetLength[0])
+        .slice(0, ranges.offset)
         .concat(
           newStyles,
-          block.styles.slice(
-            offsetLength[0] + offsetLength[1],
-            block.styles.length
-          )
+          block.styles.slice(ranges.offset + ranges.length, block.styles.length)
         )
     );
   };
 
   const checkOnCode = () => {
-    const offsetLength = findSelection()!;
-    for (let i = offsetLength[0]; i < offsetLength[0] + offsetLength[1]; i++) {
+    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       if (block.styles[i].isCode === false) {
-        onCode(offsetLength, true);
+        onCode(true);
         return;
       }
     }
-    onCode(offsetLength, false);
+    onCode(false);
   };
 
   const onInput = (e: React.FormEvent) => {
     const input = e.currentTarget.textContent;
-    const offsetLength = findSelection();
 
-    if (input && input!.length > block.text.length) {
-      console.log("insert");
-
-      const newStyles = block.styles
-        .slice(0, offsetLength[0] - 1)
-        .concat(
-          block.styles[offsetLength[0] - 2],
-          block.styles.slice(offsetLength[0] - 1, block.styles.length)
-        );
-
-      onUpdateBlock(block.blockID, input, newStyles);
-    } else if (input && input!.length < block.text.length) {
-      console.log("delete");
-
-      const newStyles = block.styles
-        .slice(0, offsetLength[0])
-        .concat(block.styles.slice(offsetLength[0] + 1, block.styles.length));
-
-      onUpdateBlock(block.blockID, input, newStyles);
+    if (!input) {
+      console.log("not input");
+      onUpdateBlock(block.blockID, "", []);
+      return;
     }
+
+    if (backSpace) {
+      console.log("delete");
+      setBackspace(!backSpace);
+
+      if (ranges.length > 0) {
+        // only batch deletion here
+        const newStyles = block.styles
+          .slice(0, ranges.offset)
+          .concat(
+            block.styles.slice(
+              ranges.offset + ranges.length,
+              block.styles.length
+            )
+          );
+
+        console.log(newStyles);
+
+        onUpdateBlock(block.blockID, input, newStyles);
+        return;
+      }
+
+      const newStyles = block.styles
+        .slice(0, ranges.offset - 1)
+        .concat(block.styles.slice(ranges.offset, block.styles.length));
+      console.log(newStyles);
+      onUpdateBlock(block.blockID, input, newStyles);
+      return;
+    }
+
+    const defaultStyle = {
+      isBold: false,
+      isUnderline: false,
+      isItalic: false,
+      isCode: false,
+    };
+
+    console.log("insert");
+    if (ranges.offset === 0) {
+      const newStyles = [defaultStyle].concat(
+        block.styles.slice(ranges.offset + ranges.length, block.styles.length)
+      );
+      onUpdateBlock(block.blockID, input, newStyles);
+      return;
+    }
+
+    const newStyles = block.styles
+      .slice(0, ranges.offset)
+      .concat(
+        block.styles[ranges.offset - 1],
+        block.styles.slice(ranges.offset + ranges.length, block.styles.length)
+      );
+    onUpdateBlock(block.blockID, input, newStyles);
+    return;
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -333,7 +355,13 @@ const BlockEditor = (props: BlockEditorProps) => {
     } else if (e.metaKey && e.key === "e") {
       e.preventDefault();
       checkOnCode();
+    } else if (e.key === "Backspace") {
+      setBackspace(true);
     }
+  };
+
+  const onSelect = (e: React.SyntheticEvent) => {
+    findSelection();
   };
 
   const revertSelection = (
@@ -358,7 +386,7 @@ const BlockEditor = (props: BlockEditorProps) => {
   };
 
   // find selection range
-  const findSelection: () => number[] = () => {
+  const findSelection: () => void = () => {
     const selection = window.getSelection();
     const first = selection?.anchorNode?.parentNode;
     const second = selection?.focusNode?.parentNode;
@@ -386,8 +414,6 @@ const BlockEditor = (props: BlockEditorProps) => {
             offset: curO,
             length: curL,
           }));
-
-          return [curO, curL];
         }
         offset += children![i].textContent!.length;
       } else if (metFirst) {
@@ -401,8 +427,6 @@ const BlockEditor = (props: BlockEditorProps) => {
             offset: curO,
             length: curL,
           }));
-
-          return [curO, curL];
         }
         length += children![i].textContent!.length;
       } else if (metSecond) {
@@ -415,8 +439,6 @@ const BlockEditor = (props: BlockEditorProps) => {
             offset: curO,
             length: curL,
           }));
-
-          return [curO, curL];
         }
         length += children![i].textContent!.length;
       } else if (children![i].isEqualNode(first as Node)) {
@@ -435,7 +457,6 @@ const BlockEditor = (props: BlockEditorProps) => {
         offset += children![i].textContent!.length;
       }
     }
-    return [0, 0];
   };
 
   return (
@@ -444,6 +465,7 @@ const BlockEditor = (props: BlockEditorProps) => {
       contentEditable={true}
       onInput={onInput}
       onKeyDown={onKeyDown}
+      onSelect={onSelect}
       dangerouslySetInnerHTML={{ __html: content }}
     />
   );
