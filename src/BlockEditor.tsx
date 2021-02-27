@@ -68,7 +68,7 @@ const BlockEditor = (props: BlockEditorProps) => {
           padding: "0",
         };
 
-        if (start <= ranges.offset && end > ranges.offset) {
+        if (start <= ranges.offset && end >= ranges.offset) {
           startId = "h".repeat(dataTokenIndex);
           startOffset = ranges.offset - start;
         }
@@ -339,7 +339,6 @@ const BlockEditor = (props: BlockEditorProps) => {
       isCode: false,
     };
 
-    console.log("insert");
     setBlockState("Insert");
     if (ranges.offset === 0) {
       const newStyles = [defaultStyle].concat(
@@ -412,9 +411,11 @@ const BlockEditor = (props: BlockEditorProps) => {
     const selection = window.getSelection();
 
     const el = document.getElementById(startId);
-    range.setStart(el!.childNodes[0], startOffset);
-    selection!.removeAllRanges();
-    selection!.addRange(range);
+    if (el) {
+      range.setStart(el!.childNodes[0], startOffset);
+      selection!.removeAllRanges();
+      selection!.addRange(range);
+    }
   };
 
   const revertSelectionDeletion = (endId: string, endOffset: number) => {
@@ -432,6 +433,12 @@ const BlockEditor = (props: BlockEditorProps) => {
   // find selection range
   const findSelection: () => void = () => {
     const selection = window.getSelection();
+
+    if (selection?.anchorNode?.nodeType === 1) {
+      setRanges({ offset: 0, length: 0 });
+      return;
+    }
+
     const first = selection?.anchorNode?.parentNode;
     const second = selection?.focusNode?.parentNode;
     const parent = selection?.anchorNode?.parentNode?.parentNode;
