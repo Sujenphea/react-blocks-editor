@@ -143,6 +143,7 @@ const BlockEditor = (props: BlockEditorProps) => {
     if (props.block !== block) {
       setBlock(props.block);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.block]);
 
   // tell props what has changed
@@ -435,7 +436,7 @@ const BlockEditor = (props: BlockEditorProps) => {
     const selection = window.getSelection();
 
     if (selection?.anchorNode?.nodeType === 1) {
-      setRanges({ offset: 0, length: 0 });
+      setRanges({ offset: block.text.length, length: 0 });
       return;
     }
 
@@ -512,6 +513,8 @@ const BlockEditor = (props: BlockEditorProps) => {
 
   return (
     <div
+      id={block.blockID}
+      style={{ minHeight: "20px" }}
       suppressContentEditableWarning
       contentEditable={true}
       onInput={onInput}
