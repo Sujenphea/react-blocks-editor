@@ -119,19 +119,19 @@ const BlockEditor = (props: BlockEditorProps) => {
     runAfterContentSet.current = () => {
       switch (blockState) {
         case "DeleteMul":
-          revertSelectionInsert(startId, startOffset);
+          revertSelectionText(startId, startOffset);
           setBlockState("None");
           break;
         case "DeleteOne":
-          revertSelectionDeletion(endId, endOffset);
+          revertSelectionText(endId, endOffset);
           setBlockState("None");
           break;
         case "Insert":
-          revertSelectionInsert(startId, startOffset + 1);
+          revertSelectionText(startId, startOffset + 1);
           setBlockState("None");
           break;
         case "Style":
-          revertSelection(startId, endId, startOffset, endOffset);
+          revertSelectionStyle(startId, endId, startOffset, endOffset);
           setBlockState("None");
           break;
       }
@@ -386,7 +386,7 @@ const BlockEditor = (props: BlockEditorProps) => {
     findSelection();
   };
 
-  const revertSelection = (
+  const revertSelectionStyle = (
     startId: string,
     endId: string,
     startOffset: number,
@@ -407,25 +407,13 @@ const BlockEditor = (props: BlockEditorProps) => {
     }
   };
 
-  const revertSelectionInsert = (startId: string, startOffset: number) => {
+  const revertSelectionText = (id: string, offset: number) => {
     let range = document.createRange();
     const selection = window.getSelection();
 
-    const el = document.getElementById(startId);
+    const el = document.getElementById(id);
     if (el) {
-      range.setStart(el!.childNodes[0], startOffset);
-      selection!.removeAllRanges();
-      selection!.addRange(range);
-    }
-  };
-
-  const revertSelectionDeletion = (endId: string, endOffset: number) => {
-    let range = document.createRange();
-    const selection = window.getSelection();
-
-    const el = document.getElementById(endId);
-    if (el) {
-      range.setStart(el!.childNodes[0], endOffset);
+      range.setStart(el!.childNodes[0], offset);
       selection!.removeAllRanges();
       selection!.addRange(range);
     }
