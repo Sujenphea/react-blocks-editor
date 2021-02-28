@@ -7,9 +7,28 @@ export const Editor = () => {
   const [blocks, setBlocks] = useState<Block[]>([
     {
       blockID: "1",
-      text: "helloWorld",
+      text: "HELLOWORLD",
       styles: [
         {
+          isBold: true,
+          isUnderline: false,
+          isItalic: false,
+          isCode: false,
+        },
+        {
+          isBold: true,
+          isUnderline: false,
+          isItalic: false,
+          isCode: false,
+        },
+        {
+          isBold: true,
+          isUnderline: false,
+          isItalic: false,
+          isCode: false,
+        },
+
+        {
           isBold: false,
           isUnderline: false,
           isItalic: false,
@@ -21,6 +40,13 @@ export const Editor = () => {
           isItalic: false,
           isCode: false,
         },
+        {
+          isBold: true,
+          isUnderline: false,
+          isItalic: false,
+          isCode: false,
+        },
+
         {
           isBold: false,
           isUnderline: false,
@@ -35,33 +61,7 @@ export const Editor = () => {
           isCode: false,
         },
         {
-          isBold: false,
-          isUnderline: false,
-          isItalic: false,
-          isCode: false,
-        },
-        {
-          isBold: false,
-          isUnderline: false,
-          isItalic: false,
-          isCode: false,
-        },
-
-        {
-          isBold: false,
-          isUnderline: false,
-          isItalic: false,
-          isCode: false,
-        },
-
-        {
-          isBold: false,
-          isUnderline: false,
-          isItalic: false,
-          isCode: false,
-        },
-        {
-          isBold: false,
+          isBold: true,
           isUnderline: false,
           isItalic: false,
           isCode: false,
