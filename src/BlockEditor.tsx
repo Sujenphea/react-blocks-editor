@@ -5,10 +5,11 @@
 // https://github.com/facebook/react/issues/1466
 
 import ReactDOMServer from "react-dom/server";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { Block, BlockState } from "./Block";
 import { CharacterMetadata } from "./CharacterMetadata";
 import { SelectionRanges } from "./SelectionRanges";
+import { useBlockStyle } from "./BlockStyles";
 
 export type BlockEditorProps = {
   block: Block;
@@ -28,6 +29,7 @@ const BlockEditor = (props: BlockEditorProps) => {
   });
   const [backSpace, setBackspace] = useState(false);
   const [blockState, setBlockState] = useState<BlockState>("None");
+  const styleMap = useBlockStyle();
 
   useEffect(() => {
     if (runAfterContentSet.current !== null) {
@@ -57,16 +59,7 @@ const BlockEditor = (props: BlockEditorProps) => {
       (a: any, b: any) => a === b,
       () => true,
       (start: number, end: number) => {
-        let blockStyle = {
-          fontWeight: 400,
-          fontStyle: "normal",
-          borderBottom: "none",
-          backgroundColor: "transparent",
-          color: "currentColor",
-          borderRadius: "initial",
-          fontSize: "initial",
-          padding: "0",
-        };
+        let blockStyle: React.CSSProperties = {};
 
         if (start <= ranges.offset && end >= ranges.offset) {
           startId = "h".repeat(dataTokenIndex);
@@ -79,21 +72,16 @@ const BlockEditor = (props: BlockEditorProps) => {
         }
 
         if (block.styles[start].isBold) {
-          blockStyle.fontWeight = 600;
+          blockStyle = { ...blockStyle, ...styleMap.styleMap.bold };
         }
         if (block.styles[start].isItalic) {
-          blockStyle.fontStyle = "italic";
+          blockStyle = { ...blockStyle, ...styleMap.styleMap.italic };
         }
         if (block.styles[start].isUnderline) {
-          blockStyle.borderBottom = "0.05em solid";
+          blockStyle = { ...blockStyle, ...styleMap.styleMap.underline };
         }
         if (block.styles[start].isCode) {
-          // something wrong with padding
-          blockStyle.backgroundColor = "rgba(135, 131, 120, 0.15)";
-          blockStyle.color = "#EB5757";
-          // blockStyle.borderRadius = "3px";
-          // blockStyle.fontSize = "85%";
-          // blockStyle.padding = "0.2em 0.4em";
+          blockStyle = { ...blockStyle, ...styleMap.styleMap.code };
         }
 
         newContent.push(
