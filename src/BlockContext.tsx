@@ -26,26 +26,15 @@ const BlockStyleContext = React.createContext<
   | undefined
 >(undefined);
 
-const BlockStyleProvider = (props: {
-  customStyleMap: BlockStyleMap;
+const BlockProvider = (props: {
+  customStyleMap?: BlockStyleMap;
+  keyBindingFn?: (e: React.KeyboardEvent) => void;
   children: React.ReactNode;
 }) => {
-  let styleMap = props.customStyleMap;
+  let styleMap = DefaultStyleMap;
 
-  if (!props.customStyleMap.bold) {
-    styleMap = { ...styleMap, bold: DefaultStyleMap.bold };
-  }
-
-  if (!props.customStyleMap.italic) {
-    styleMap = { ...styleMap, italic: DefaultStyleMap.italic };
-  }
-
-  if (!props.customStyleMap.underline) {
-    styleMap = { ...styleMap, underline: DefaultStyleMap.underline };
-  }
-
-  if (!props.customStyleMap.code) {
-    styleMap = { ...styleMap, code: DefaultStyleMap.code };
+  if (typeof props.customStyleMap !== "undefined") {
+    styleMap = { ...styleMap, ...props.customStyleMap };
   }
 
   return (
@@ -65,4 +54,4 @@ const useBlockStyle = () => {
   return context;
 };
 
-export { BlockStyleProvider, useBlockStyle };
+export { BlockProvider, useBlockStyle };
