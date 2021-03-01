@@ -59,8 +59,6 @@ const BlockEditor = (props: BlockEditorProps) => {
       (a: any, b: any) => a === b,
       () => true,
       (start: number, end: number) => {
-        let blockStyle: React.CSSProperties = {};
-
         if (start <= ranges.offset && end >= ranges.offset) {
           startId = "h".repeat(dataTokenIndex);
           startOffset = ranges.offset - start;
@@ -71,23 +69,10 @@ const BlockEditor = (props: BlockEditorProps) => {
           endOffset = rangeEnd - start;
         }
 
-        if (block.styles[start].isBold) {
-          blockStyle = { ...blockStyle, ...styleMap.styleMap.bold };
-        }
-        if (block.styles[start].isItalic) {
-          blockStyle = { ...blockStyle, ...styleMap.styleMap.italic };
-        }
-        if (block.styles[start].isUnderline) {
-          blockStyle = { ...blockStyle, ...styleMap.styleMap.underline };
-        }
-        if (block.styles[start].isCode) {
-          blockStyle = { ...blockStyle, ...styleMap.styleMap.code };
-        }
-
         newContent.push(
           <span
             key={dataTokenIndex}
-            style={blockStyle}
+            style={getBlockStyle(start, end)}
             id={"h".repeat(dataTokenIndex)}
           >
             {block.text.slice(start, end)}
@@ -104,6 +89,7 @@ const BlockEditor = (props: BlockEditorProps) => {
 
     setContent(newContentStatic);
 
+    // modify caret/selection position
     runAfterContentSet.current = () => {
       switch (blockState) {
         case "DeleteMul":
@@ -485,6 +471,25 @@ const BlockEditor = (props: BlockEditorProps) => {
         offset += children![i].textContent!.length;
       }
     }
+  };
+
+  const getBlockStyle = (start: number, end: number) => {
+    let blockStyle: React.CSSProperties = {};
+
+    if (block.styles[start].isBold) {
+      blockStyle = { ...blockStyle, ...styleMap.styleMap.bold };
+    }
+    if (block.styles[start].isItalic) {
+      blockStyle = { ...blockStyle, ...styleMap.styleMap.italic };
+    }
+    if (block.styles[start].isUnderline) {
+      blockStyle = { ...blockStyle, ...styleMap.styleMap.underline };
+    }
+    if (block.styles[start].isCode) {
+      blockStyle = { ...blockStyle, ...styleMap.styleMap.code };
+    }
+
+    return blockStyle;
   };
 
   return (
