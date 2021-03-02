@@ -3,4 +3,5 @@ export type CharacterMetadata = {
   isItalic: boolean;
   isUnderline: boolean;
   isCode: boolean;
+  isStrikethrough: boolean;
 };

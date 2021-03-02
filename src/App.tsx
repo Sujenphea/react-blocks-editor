@@ -26,6 +26,8 @@ function App() {
         return "italic";
       case "f":
         return "code";
+      case "e":
+        return "strikethrough";
     }
   };
 

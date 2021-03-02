@@ -141,6 +141,7 @@ const BlockEditor = (props: BlockEditorProps) => {
         isUnderline: block.styles[i].isUnderline,
         isItalic: block.styles[i].isItalic,
         isCode: block.styles[i].isCode,
+        isStrikethrough: block.styles[i].isStrikethrough,
       });
     }
     onUpdateBlock(
@@ -175,6 +176,7 @@ const BlockEditor = (props: BlockEditorProps) => {
         isUnderline: toAdd,
         isItalic: block.styles[i].isItalic,
         isCode: block.styles[i].isCode,
+        isStrikethrough: block.styles[i].isStrikethrough,
       });
     }
 
@@ -210,6 +212,7 @@ const BlockEditor = (props: BlockEditorProps) => {
         isUnderline: block.styles[i].isUnderline,
         isItalic: toAdd,
         isCode: block.styles[i].isCode,
+        isStrikethrough: block.styles[i].isStrikethrough,
       });
     }
 
@@ -245,6 +248,7 @@ const BlockEditor = (props: BlockEditorProps) => {
         isUnderline: block.styles[i].isUnderline,
         isItalic: block.styles[i].isItalic,
         isCode: toAdd,
+        isStrikethrough: block.styles[i].isStrikethrough,
       });
     }
 
@@ -268,6 +272,42 @@ const BlockEditor = (props: BlockEditorProps) => {
       }
     }
     onCode(false);
+  };
+
+  const onStrikethough = (toAdd: boolean) => {
+    console.log("strikethrough");
+
+    let newStyles: CharacterMetadata[] = [];
+    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
+      newStyles.push({
+        isBold: block.styles[i].isBold,
+        isUnderline: block.styles[i].isUnderline,
+        isItalic: block.styles[i].isItalic,
+        isCode: block.styles[i].isCode,
+        isStrikethrough: toAdd,
+      });
+    }
+
+    onUpdateBlock(
+      block.blockID,
+      block.text,
+      block.styles
+        .slice(0, ranges.offset)
+        .concat(
+          newStyles,
+          block.styles.slice(ranges.offset + ranges.length, block.styles.length)
+        )
+    );
+  };
+
+  const checkOnStrikethrough = () => {
+    for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
+      if (block.styles[i].isStrikethrough === false) {
+        onStrikethough(true);
+        return;
+      }
+    }
+    onStrikethough(false);
   };
 
   const onInput = (e: React.FormEvent) => {
@@ -312,6 +352,7 @@ const BlockEditor = (props: BlockEditorProps) => {
       isUnderline: false,
       isItalic: false,
       isCode: false,
+      isStrikethrough: false,
     };
 
     setBlockState("Insert");
@@ -356,6 +397,11 @@ const BlockEditor = (props: BlockEditorProps) => {
           e.preventDefault();
           setBlockState("Style");
           checkOnCode();
+          return;
+        case "strikethrough":
+          e.preventDefault();
+          setBlockState("Style");
+          checkOnStrikethrough();
           return;
         case "handled":
           e.preventDefault();
@@ -505,6 +551,9 @@ const BlockEditor = (props: BlockEditorProps) => {
     if (block.styles[start].isCode) {
       blockStyle = { ...blockStyle, ...inlineStyleMap.code };
     }
+    if (block.styles[start].isStrikethrough) {
+      blockStyle = { ...blockStyle, ...inlineStyleMap.strikethrough };
+    }
 
     return blockStyle;
   };
@@ -512,7 +561,10 @@ const BlockEditor = (props: BlockEditorProps) => {
   return (
     <div
       id={block.blockID}
-      style={{ ...blockStyle, minHeight: "20px" }}
+      style={{
+        ...blockStyle,
+        minHeight: "20px",
+      }}
       suppressContentEditableWarning
       contentEditable={true}
       onInput={onInput}

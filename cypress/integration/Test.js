@@ -78,6 +78,12 @@ context("Insert and Delete text", () => {
 })
 
 context("Apply and remove style", () => {
+    it('text has color', () => {
+        cy
+        .get("#1")
+        .should("have.css", 'color', 'rgb(222, 184, 135)')
+    })
+
     it('apply bold', () => {
         cy
         .get("#1")
@@ -164,7 +170,29 @@ context("Apply and remove style", () => {
         
         cy
         .get('#h')
-        .should('have.css', 'border-bottom', '0px none rgb(0, 0, 0)')
+        .should('have.css', 'border-bottom', '0px none rgb(222, 184, 135)')
+    })
+
+    it('apply strikethrough', () => {
+        cy
+        .get("#1")
+        .type('{selectall}')
+        .type('{meta+e}')
+        
+        cy
+        .get('#h')
+        .should('have.css', 'text-decoration', 'line-through solid rgb(222, 184, 135)')
+    })
+
+    it('delete strikethrough', () => {
+        cy
+        .get("#1")
+        .type('{selectall}')
+        .type('{meta+e}')
+        
+        cy
+        .get('#h')
+        .should('have.css', 'text-decoration', 'none solid rgb(222, 184, 135)')
     })
 })
 

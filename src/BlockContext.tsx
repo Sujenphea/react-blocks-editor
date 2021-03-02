@@ -1,11 +1,19 @@
 import React from "react";
 
 // style
+export type InlineStyles =
+  | "italic"
+  | "bold"
+  | "underline"
+  | "code"
+  | "strikethrough";
+
 export type BlockStyleMap = {
   bold?: React.CSSProperties;
   italic?: React.CSSProperties;
   underline?: React.CSSProperties;
   code?: React.CSSProperties;
+  strikethrough?: React.CSSProperties;
 };
 
 const DefaultStyleMap: BlockStyleMap = {
@@ -13,6 +21,7 @@ const DefaultStyleMap: BlockStyleMap = {
   italic: { fontStyle: "italic" },
   underline: { borderBottom: "0.05em solid" },
   code: { backgroundColor: "rgba(135, 131, 120, 0.15)", color: "#EB5757" },
+  strikethrough: { textDecoration: "line-through" },
 };
 
 // key binding
@@ -21,6 +30,7 @@ export type StyleType =
   | "bold"
   | "underline"
   | "code"
+  | "strikethrough"
   | "handled"
   | undefined;
 
@@ -40,6 +50,8 @@ const DefaultKeyBindingFn: (e: React.KeyboardEvent) => StyleType = (
       return "italic";
     case "e":
       return "code";
+    case "s":
+      return "strikethrough";
   }
 };
 

@@ -14,18 +14,21 @@ export const Editor = () => {
           isUnderline: false,
           isItalic: false,
           isCode: false,
+          isStrikethrough: false,
         },
         {
           isBold: true,
           isUnderline: false,
           isItalic: false,
           isCode: false,
+          isStrikethrough: false,
         },
         {
           isBold: true,
           isUnderline: false,
           isItalic: false,
           isCode: false,
+          isStrikethrough: false,
         },
 
         {
@@ -33,18 +36,21 @@ export const Editor = () => {
           isUnderline: false,
           isItalic: false,
           isCode: false,
+          isStrikethrough: false,
         },
         {
           isBold: false,
           isUnderline: false,
           isItalic: false,
           isCode: false,
+          isStrikethrough: false,
         },
         {
           isBold: true,
           isUnderline: false,
           isItalic: false,
           isCode: false,
+          isStrikethrough: false,
         },
 
         {
@@ -52,6 +58,7 @@ export const Editor = () => {
           isUnderline: false,
           isItalic: false,
           isCode: false,
+          isStrikethrough: false,
         },
 
         {
@@ -59,18 +66,21 @@ export const Editor = () => {
           isUnderline: false,
           isItalic: false,
           isCode: false,
+          isStrikethrough: false,
         },
         {
           isBold: true,
           isUnderline: false,
           isItalic: false,
           isCode: false,
+          isStrikethrough: false,
         },
         {
           isBold: false,
           isUnderline: false,
           isItalic: false,
           isCode: false,
+          isStrikethrough: false,
         },
       ],
     },
