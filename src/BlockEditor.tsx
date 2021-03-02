@@ -364,6 +364,10 @@ const BlockEditor = (props: BlockEditorProps) => {
       }
     }
 
+    if (e.key === "Enter") {
+      e.preventDefault();
+    }
+
     if (e.key === "Backspace") {
       setBackspace(true);
     }
