@@ -1,4 +1,5 @@
 /// <reference types="cypress" />
+// ./node_modules/.bin/cypress open
 
 context("Insert and Delete text", () => {
     
@@ -27,12 +28,52 @@ context("Insert and Delete text", () => {
         .should("have.text", "hellotesting")
     })
 
+    it('insert in the middle works', () => {
+        cy
+        .get("#1")
+        .click()
+        .type("{leftArrow}{leftArrow}x")
+        .should("have.text", "hellotestixng")
+    })
+
     it('delete works', () => {
         cy
         .get('#1')
         .click()
         .type("{backspace}{backspace}")
-        .should("have.text", "hellotesti")
+        .should("have.text", "hellotestix")
+    })
+
+    it('delete in the middle works', () => {
+        cy
+        .get('#1')
+        .click()
+        .type("{leftArrow}{leftArrow}{backspace}{backspace}")
+        .should("have.text", "helloteix")
+    })
+
+    it('insert at start works', () => {
+        cy
+        .get('#1')
+        .click()
+        .type("{home}pp")
+        .should("have.text", "pphelloteix")
+    })
+
+    it('delete at start has no effect', () => {
+        cy
+        .get('#1')
+        .click()
+        .type("{home}{backspace}")
+        .should("have.text", "pphelloteix")
+    })
+
+    it('delete at start has no effect', () => {
+        cy
+        .get('#1')
+        .click()
+        .type("{home}{backspace}")
+        .should("have.text", "pphelloteix")
     })
 })
 
@@ -41,18 +82,18 @@ context("Apply and remove style", () => {
         cy
         .get("#1")
         .type('{selectall}')
-        .type('{meta}b', { release: false })
+        .type('{meta+a}')
         
         cy
         .get('#h')
-        .should('have.css', 'font-weight', '600')
+        .should('have.css', 'font-weight', '700')
     })
 
     it('delete bold', () => {
         cy
         .get("#1")
         .type('{selectall}')
-        .type('{meta}b', { release: false })
+        .type('{meta+a}')
         
         cy
         .get('#h')
@@ -63,18 +104,18 @@ context("Apply and remove style", () => {
         cy
         .get("#1")
         .type('{selectall}')
-        .type('{meta}i', { release: false })
+        .type('{meta+d}')
         
         cy
         .get('#h')
-        .should('have.css', 'font-style', 'italic')
+        .should('have.css', 'color', 'rgb(65, 105, 225)')
     })
 
     it('delete italic', () => {
         cy
         .get("#1")
         .type('{selectall}')
-        .type('{meta}i', { release: false })
+        .type('{meta+d}')
         
         cy
         .get('#h')
@@ -85,19 +126,19 @@ context("Apply and remove style", () => {
         cy
         .get("#1")
         .type('{selectall}')
-        .type('{meta}e', { release: false })
+        .type('{meta+f}')
         
         cy
         .get('#h')
-        .should('have.css', 'background-color', 'rgba(135, 131, 120, 0.15)')
-        .should('have.css', 'color', 'rgb(235, 87, 87)')
+        .should('have.css', 'background-color', 'rgb(87, 87, 87)')
+        // .should('have.css', 'color', 'rgb(235, 87, 87)')
     })
 
     it('delete code', () => {
         cy
         .get("#1")
         .type('{selectall}')
-        .type('{meta}e', { release: false })
+        .type('{meta+f}')
         
         cy
         .get('#h')
@@ -108,21 +149,31 @@ context("Apply and remove style", () => {
         cy
         .get("#1")
         .type('{selectall}')
-        .type('{meta}u', { release: false })
+        .type('{meta+s}')
         
         cy
         .get('#h')
-        .should('have.css', 'border-bottom', '1px solid rgb(0, 0, 0)')
+        .should('have.css', 'border-bottom', '1.59375px dotted rgb(255, 0, 0)')
     })
 
     it('delete underline', () => {
         cy
         .get("#1")
         .type('{selectall}')
-        .type('{meta}u', { release: false })
+        .type('{meta+s}')
         
         cy
         .get('#h')
         .should('have.css', 'border-bottom', '0px none rgb(0, 0, 0)')
+    })
+})
+
+context("key commands", () => {
+    it('Enter has no effect', () => {
+        cy
+        .get("#1")
+        .click()
+        .type("{enter}")
+        .should("have.text", "pphelloteix" )
     })
 })

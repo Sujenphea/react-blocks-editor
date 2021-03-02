@@ -45,23 +45,25 @@ const DefaultKeyBindingFn: (e: React.KeyboardEvent) => StyleType = (
 
 const BlockContext = React.createContext<
   | {
-      styleMap: BlockStyleMap;
+      inlineStyleMap: BlockStyleMap;
       keyBindingFn?: (e: React.KeyboardEvent) => StyleType;
+      blockStyle?: React.CSSProperties;
     }
   | undefined
 >(undefined);
 
 const BlockProvider = (props: {
-  customStyleMap?: BlockStyleMap;
+  customInlineStyleMap?: BlockStyleMap;
   customKeyBindingFn?: (e: React.KeyboardEvent) => StyleType;
+  customBlockStyle?: React.CSSProperties;
   children: React.ReactNode;
 }) => {
   // style
-  let styleMap = DefaultStyleMap;
+  let inlineStyleMap = DefaultStyleMap;
   let keyBindingFn = DefaultKeyBindingFn;
 
-  if (typeof props.customStyleMap !== "undefined") {
-    styleMap = { ...styleMap, ...props.customStyleMap };
+  if (typeof props.customInlineStyleMap !== "undefined") {
+    inlineStyleMap = { ...inlineStyleMap, ...props.customInlineStyleMap };
   }
 
   // key binding
@@ -71,7 +73,13 @@ const BlockProvider = (props: {
   }
 
   return (
-    <BlockContext.Provider value={{ styleMap, keyBindingFn }}>
+    <BlockContext.Provider
+      value={{
+        inlineStyleMap,
+        keyBindingFn,
+        blockStyle: props.customBlockStyle,
+      }}
+    >
       {props.children}
     </BlockContext.Provider>
   );

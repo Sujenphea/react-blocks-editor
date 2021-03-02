@@ -3,7 +3,7 @@ import { BlockStyleMap, BlockProvider, StyleType } from "./BlockContext";
 import { Editor } from "./Editor";
 
 function App() {
-  const customeStyleMap: BlockStyleMap = {
+  const customInlineStyleMap: BlockStyleMap = {
     // bold: { color: "saddlebrown" },
     italic: { color: "royalblue" },
     underline: { borderBottom: "0.1em dotted red" },
@@ -32,8 +32,9 @@ function App() {
   return (
     <div className="App">
       <BlockProvider
-        customStyleMap={customeStyleMap}
+        customInlineStyleMap={customInlineStyleMap}
         customKeyBindingFn={customKeyBindingFn}
+        customBlockStyle={{ color: "burlywood" }}
       >
         {/* <BlockProvider> */}
         <h1>Hello world</h1>

@@ -29,7 +29,7 @@ const BlockEditor = (props: BlockEditorProps) => {
   });
   const [backSpace, setBackspace] = useState(false);
   const [blockState, setBlockState] = useState<BlockState>("None");
-  const { styleMap, keyBindingFn } = useBlockProvider();
+  const { inlineStyleMap, keyBindingFn, blockStyle } = useBlockProvider();
 
   useEffect(() => {
     if (runAfterContentSet.current !== null) {
@@ -494,16 +494,16 @@ const BlockEditor = (props: BlockEditorProps) => {
     let blockStyle: React.CSSProperties = {};
 
     if (block.styles[start].isBold) {
-      blockStyle = { ...blockStyle, ...styleMap.bold };
+      blockStyle = { ...blockStyle, ...inlineStyleMap.bold };
     }
     if (block.styles[start].isItalic) {
-      blockStyle = { ...blockStyle, ...styleMap.italic };
+      blockStyle = { ...blockStyle, ...inlineStyleMap.italic };
     }
     if (block.styles[start].isUnderline) {
-      blockStyle = { ...blockStyle, ...styleMap.underline };
+      blockStyle = { ...blockStyle, ...inlineStyleMap.underline };
     }
     if (block.styles[start].isCode) {
-      blockStyle = { ...blockStyle, ...styleMap.code };
+      blockStyle = { ...blockStyle, ...inlineStyleMap.code };
     }
 
     return blockStyle;
@@ -512,7 +512,7 @@ const BlockEditor = (props: BlockEditorProps) => {
   return (
     <div
       id={block.blockID}
-      style={{ minHeight: "20px" }}
+      style={{ ...blockStyle, minHeight: "20px" }}
       suppressContentEditableWarning
       contentEditable={true}
       onInput={onInput}
