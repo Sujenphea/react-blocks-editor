@@ -5,11 +5,11 @@
 // https://github.com/facebook/react/issues/1466
 
 import ReactDOMServer from "react-dom/server";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Block, BlockState } from "./Block";
 import { CharacterMetadata } from "./CharacterMetadata";
 import { SelectionRanges } from "./SelectionRanges";
-import { useBlockStyle } from "./BlockStyles";
+import { useBlockProvider } from "./BlockContext";
 
 export type BlockEditorProps = {
   block: Block;
@@ -29,7 +29,7 @@ const BlockEditor = (props: BlockEditorProps) => {
   });
   const [backSpace, setBackspace] = useState(false);
   const [blockState, setBlockState] = useState<BlockState>("None");
-  const styleMap = useBlockStyle();
+  const { styleMap, keyBindingFn } = useBlockProvider();
 
   useEffect(() => {
     if (runAfterContentSet.current !== null) {
@@ -334,24 +334,37 @@ const BlockEditor = (props: BlockEditorProps) => {
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
-    // BOLD
-    if (e.metaKey && e.key === "b") {
-      e.preventDefault();
-      setBlockState("Style");
-      checkOnBold();
-    } else if (e.metaKey && e.key === "u") {
-      e.preventDefault();
-      setBlockState("Style");
-      checkOnUnderline();
-    } else if (e.metaKey && e.key === "i") {
-      e.preventDefault();
-      setBlockState("Style");
-      checkOnItalic();
-    } else if (e.metaKey && e.key === "e") {
-      e.preventDefault();
-      setBlockState("Style");
-      checkOnCode();
-    } else if (e.key === "Backspace") {
+    if (keyBindingFn) {
+      const result = keyBindingFn(e);
+      switch (result) {
+        case "bold":
+          e.preventDefault();
+          setBlockState("Style");
+          checkOnBold();
+          return;
+        case "underline":
+          e.preventDefault();
+          setBlockState("Style");
+          checkOnUnderline();
+          return;
+        case "italic":
+          e.preventDefault();
+          setBlockState("Style");
+          checkOnItalic();
+          return;
+        case "code":
+          e.preventDefault();
+          setBlockState("Style");
+          checkOnCode();
+          return;
+        case "handled":
+          e.preventDefault();
+          console.log("handled");
+          return;
+      }
+    }
+
+    if (e.key === "Backspace") {
       setBackspace(true);
     }
   };
@@ -477,16 +490,16 @@ const BlockEditor = (props: BlockEditorProps) => {
     let blockStyle: React.CSSProperties = {};
 
     if (block.styles[start].isBold) {
-      blockStyle = { ...blockStyle, ...styleMap.styleMap.bold };
+      blockStyle = { ...blockStyle, ...styleMap.bold };
     }
     if (block.styles[start].isItalic) {
-      blockStyle = { ...blockStyle, ...styleMap.styleMap.italic };
+      blockStyle = { ...blockStyle, ...styleMap.italic };
     }
     if (block.styles[start].isUnderline) {
-      blockStyle = { ...blockStyle, ...styleMap.styleMap.underline };
+      blockStyle = { ...blockStyle, ...styleMap.underline };
     }
     if (block.styles[start].isCode) {
-      blockStyle = { ...blockStyle, ...styleMap.styleMap.code };
+      blockStyle = { ...blockStyle, ...styleMap.code };
     }
 
     return blockStyle;

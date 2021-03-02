@@ -1,6 +1,5 @@
 import React from "react";
-import { Block } from "./Block";
-import { BlockStyleMap, BlockProvider } from "./BlockContext";
+import { BlockStyleMap, BlockProvider, StyleType } from "./BlockContext";
 import { Editor } from "./Editor";
 
 function App() {
@@ -11,9 +10,31 @@ function App() {
     code: { backgroundColor: "#575757" },
   };
 
+  const customKeyBindingFn: (e: React.KeyboardEvent) => StyleType = (
+    e: React.KeyboardEvent
+  ) => {
+    if (!e.metaKey) {
+      return;
+    }
+
+    switch (e.key) {
+      case "a":
+        return "bold";
+      case "s":
+        return "underline";
+      case "d":
+        return "italic";
+      case "f":
+        return "code";
+    }
+  };
+
   return (
     <div className="App">
-      <BlockProvider customStyleMap={customeStyleMap}>
+      <BlockProvider
+        customStyleMap={customeStyleMap}
+        customKeyBindingFn={customKeyBindingFn}
+      >
         {/* <BlockProvider> */}
         <h1>Hello world</h1>
         <Editor />
