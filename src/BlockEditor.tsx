@@ -431,12 +431,11 @@ const BlockEditor = (props: BlockEditorProps) => {
   const onCopy = (e: React.ClipboardEvent) => {
     console.log("onCopy");
 
+    e.preventDefault();
     if (ranges.length === 0) {
-      e.preventDefault();
       return;
     }
 
-    e.preventDefault();
     setClipboard({
       blockID: "-1",
       text: block.text.slice(ranges.offset, ranges.offset + ranges.length),
@@ -446,6 +445,7 @@ const BlockEditor = (props: BlockEditorProps) => {
 
   const onPaste = (e: React.ClipboardEvent) => {
     console.log("onPaste");
+
     e.preventDefault();
 
     if (clipboard === null) {
@@ -485,6 +485,37 @@ const BlockEditor = (props: BlockEditorProps) => {
       .slice(0, ranges.offset)
       .concat(
         clipboard.styles,
+        block.styles.slice(ranges.offset + ranges.length, block.styles.length)
+      );
+
+    onUpdateBlock(block.blockID, newText, newStyles);
+  };
+
+  const onCut = (e: React.ClipboardEvent) => {
+    console.log("onCut");
+
+    e.preventDefault();
+
+    if (ranges.length === 0) {
+      return;
+    }
+
+    setBlockState("DeleteMul");
+    setClipboard({
+      blockID: "-1",
+      text: block.text.slice(ranges.offset, ranges.offset + ranges.length),
+      styles: block.styles.slice(ranges.offset, ranges.offset + ranges.length),
+    });
+
+    const newText = block.text
+      .slice(0, ranges.offset)
+      .concat(
+        block.text.slice(ranges.offset + ranges.length, block.text.length)
+      );
+
+    const newStyles = block.styles
+      .slice(0, ranges.offset)
+      .concat(
         block.styles.slice(ranges.offset + ranges.length, block.styles.length)
       );
 
@@ -640,6 +671,7 @@ const BlockEditor = (props: BlockEditorProps) => {
       onSelect={onSelect}
       onCopy={onCopy}
       onPaste={onPaste}
+      onCut={onCut}
       dangerouslySetInnerHTML={{ __html: content }}
     />
   );
