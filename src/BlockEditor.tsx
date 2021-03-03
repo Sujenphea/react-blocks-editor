@@ -30,6 +30,7 @@ const BlockEditor = (props: BlockEditorProps) => {
   const [backSpace, setBackspace] = useState(false);
   const [blockState, setBlockState] = useState<BlockState>("None");
   const { inlineStyleMap, keyBindingFn, blockStyle } = useBlockProvider();
+  const [clipboard, setClipboard] = useState<Block | null>(null);
 
   useEffect(() => {
     if (runAfterContentSet.current !== null) {
@@ -102,6 +103,10 @@ const BlockEditor = (props: BlockEditorProps) => {
           break;
         case "Insert":
           revertSelectionText(startId, startOffset + 1);
+          setBlockState("None");
+          break;
+        case "InsertMul":
+          revertSelectionText(startId, startOffset);
           setBlockState("None");
           break;
         case "Style":
@@ -423,6 +428,69 @@ const BlockEditor = (props: BlockEditorProps) => {
     findSelection();
   };
 
+  const onCopy = (e: React.ClipboardEvent) => {
+    console.log("onCopy");
+
+    if (ranges.length === 0) {
+      e.preventDefault();
+      return;
+    }
+
+    e.preventDefault();
+    setClipboard({
+      blockID: "-1",
+      text: block.text.slice(ranges.offset, ranges.offset + ranges.length),
+      styles: block.styles.slice(ranges.offset, ranges.offset + ranges.length),
+    });
+  };
+
+  const onPaste = (e: React.ClipboardEvent) => {
+    console.log("onPaste");
+    e.preventDefault();
+
+    if (clipboard === null) {
+      return;
+    }
+
+    setBlockState("InsertMul");
+
+    if (ranges.length === 0) {
+      const newText = block.text
+        .slice(0, ranges.offset)
+        .concat(
+          clipboard.text,
+          block.text.slice(ranges.offset, block.text.length)
+        );
+      const newStyles = block.styles
+        .slice(0, ranges.offset)
+        .concat(
+          clipboard.styles,
+          block.styles.slice(ranges.offset, block.styles.length)
+        );
+
+      setRanges((ranges) => {
+        return { offset: ranges.offset + clipboard.text.length, length: 0 };
+      });
+      onUpdateBlock(block.blockID, newText, newStyles);
+      return;
+    }
+
+    const newText = block.text
+      .slice(0, ranges.offset)
+      .concat(
+        clipboard.text,
+        block.text.slice(ranges.offset + ranges.length, block.text.length)
+      );
+    const newStyles = block.styles
+      .slice(0, ranges.offset)
+      .concat(
+        clipboard.styles,
+        block.styles.slice(ranges.offset + ranges.length, block.styles.length)
+      );
+
+    onUpdateBlock(block.blockID, newText, newStyles);
+  };
+
   const revertSelectionStyle = (
     startId: string,
     endId: string,
@@ -570,6 +638,8 @@ const BlockEditor = (props: BlockEditorProps) => {
       onInput={onInput}
       onKeyDown={onKeyDown}
       onSelect={onSelect}
+      onCopy={onCopy}
+      onPaste={onPaste}
       dangerouslySetInnerHTML={{ __html: content }}
     />
   );

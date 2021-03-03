@@ -9,6 +9,7 @@ export type Block = {
 export type BlockState =
   | "Style"
   | "Insert"
+  | "InsertMul"
   | "DeleteOne"
   | "DeleteMul"
   | "None";
