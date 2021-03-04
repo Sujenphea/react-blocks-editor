@@ -84,6 +84,11 @@ export const Editor = () => {
         },
       ],
     },
+    {
+      blockID: "2",
+      text: "",
+      styles: [],
+    },
   ]);
 
   const updateBlock = (
@@ -109,6 +114,7 @@ export const Editor = () => {
             key={block.blockID}
             block={block}
             updateBlock={updateBlock}
+            focus={true}
           />
         );
       })}

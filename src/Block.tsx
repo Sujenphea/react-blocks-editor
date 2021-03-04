@@ -6,14 +6,6 @@ export type Block = {
   styles: CharacterMetadata[];
 };
 
-export type BlockState =
-  | "Style"
-  | "Insert"
-  | "InsertMul"
-  | "DeleteOne"
-  | "DeleteMul"
-  | "None";
-
 // ":db/id"?: number;
 // "block/uid"?: string;
 // "block/children"?: Node[];

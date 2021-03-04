@@ -6,14 +6,23 @@
 
 import ReactDOMServer from "react-dom/server";
 import React, { useEffect, useRef, useState } from "react";
-import { Block, BlockState } from "./Block";
+import { Block } from "./Block";
 import { CharacterMetadata } from "./CharacterMetadata";
 import { SelectionRanges } from "./SelectionRanges";
 import { useBlockProvider } from "./BlockContext";
 
-export type BlockEditorProps = {
+type BlockState =
+  | "Style"
+  | "Insert"
+  | "InsertMul"
+  | "DeleteOne"
+  | "DeleteMul"
+  | "None";
+
+type BlockEditorProps = {
   block: Block;
   updateBlock: (id: string, text: string, styles: CharacterMetadata[]) => void;
+  focus: Boolean;
 };
 
 const BlockEditor = (props: BlockEditorProps) => {
@@ -28,6 +37,7 @@ const BlockEditor = (props: BlockEditorProps) => {
     length: 0,
   });
   const [backSpace, setBackspace] = useState(false);
+  const [focused, setFocused] = useState(false);
   const [blockState, setBlockState] = useState<BlockState>("None");
   const { inlineStyleMap, keyBindingFn, blockStyle } = useBlockProvider();
 
@@ -72,8 +82,9 @@ const BlockEditor = (props: BlockEditorProps) => {
         newContent.push(
           <span
             key={dataTokenIndex}
-            style={getBlockStyle(start, end)}
+            style={getBlockStyle(start)}
             id={"h".repeat(dataTokenIndex)}
+            className="blockSpans"
           >
             {block.text.slice(start, end)}
           </span>
@@ -112,6 +123,11 @@ const BlockEditor = (props: BlockEditorProps) => {
           revertSelectionStyle(startId, endId, startOffset, endOffset);
           setBlockState("None");
           break;
+      }
+
+      if (props.focus && !focused) {
+        onFocus();
+        setFocused(true);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -161,7 +177,7 @@ const BlockEditor = (props: BlockEditorProps) => {
     );
   };
 
-  const checkOnBold = () => {
+  const toggleBold = () => {
     for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       if (block.styles[i].isBold === false) {
         onBold(true);
@@ -197,7 +213,7 @@ const BlockEditor = (props: BlockEditorProps) => {
     );
   };
 
-  const checkOnUnderline = () => {
+  const toggleUnderline = () => {
     for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       if (block.styles[i].isUnderline === false) {
         onUnderline(true);
@@ -233,7 +249,7 @@ const BlockEditor = (props: BlockEditorProps) => {
     );
   };
 
-  const checkOnItalic = () => {
+  const toggleItalic = () => {
     for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       if (block.styles[i].isItalic === false) {
         onItalic(true);
@@ -269,7 +285,7 @@ const BlockEditor = (props: BlockEditorProps) => {
     );
   };
 
-  const checkOnCode = () => {
+  const toggleCode = () => {
     for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       if (block.styles[i].isCode === false) {
         onCode(true);
@@ -305,7 +321,7 @@ const BlockEditor = (props: BlockEditorProps) => {
     );
   };
 
-  const checkOnStrikethrough = () => {
+  const toggleStrikethrough = () => {
     for (let i = ranges.offset; i < ranges.offset + ranges.length; i++) {
       if (block.styles[i].isStrikethrough === false) {
         onStrikethough(true);
@@ -313,6 +329,51 @@ const BlockEditor = (props: BlockEditorProps) => {
       }
     }
     onStrikethough(false);
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (keyBindingFn) {
+      const result = keyBindingFn(e);
+      switch (result) {
+        case "bold":
+          e.preventDefault();
+          setBlockState("Style");
+          toggleBold();
+          return;
+        case "underline":
+          e.preventDefault();
+          setBlockState("Style");
+          toggleUnderline();
+          return;
+        case "italic":
+          e.preventDefault();
+          setBlockState("Style");
+          toggleItalic();
+          return;
+        case "code":
+          e.preventDefault();
+          setBlockState("Style");
+          toggleCode();
+          return;
+        case "strikethrough":
+          e.preventDefault();
+          setBlockState("Style");
+          toggleStrikethrough();
+          return;
+        case "handled":
+          e.preventDefault();
+          console.log("handled");
+          return;
+      }
+    }
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+    }
+
+    if (e.key === "Backspace") {
+      setBackspace(true);
+    }
   };
 
   const onInput = (e: React.FormEvent) => {
@@ -379,52 +440,7 @@ const BlockEditor = (props: BlockEditorProps) => {
     return;
   };
 
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    if (keyBindingFn) {
-      const result = keyBindingFn(e);
-      switch (result) {
-        case "bold":
-          e.preventDefault();
-          setBlockState("Style");
-          checkOnBold();
-          return;
-        case "underline":
-          e.preventDefault();
-          setBlockState("Style");
-          checkOnUnderline();
-          return;
-        case "italic":
-          e.preventDefault();
-          setBlockState("Style");
-          checkOnItalic();
-          return;
-        case "code":
-          e.preventDefault();
-          setBlockState("Style");
-          checkOnCode();
-          return;
-        case "strikethrough":
-          e.preventDefault();
-          setBlockState("Style");
-          checkOnStrikethrough();
-          return;
-        case "handled":
-          e.preventDefault();
-          console.log("handled");
-          return;
-      }
-    }
-
-    if (e.key === "Enter") {
-      e.preventDefault();
-    }
-
-    if (e.key === "Backspace") {
-      setBackspace(true);
-    }
-  };
-
-  const onSelect = (e: React.SyntheticEvent) => {
+  const onSelect = () => {
     findSelection();
   };
 
@@ -589,6 +605,20 @@ const BlockEditor = (props: BlockEditorProps) => {
     onUpdateBlock(block.blockID, newText, newStyles);
   };
 
+  const onFocus = () => {
+    console.log("onFocus");
+
+    const x = document.getElementsByClassName("blockSpans");
+    const y = x[x.length - 1] as HTMLElement;
+
+    let range = document.createRange();
+    const selection = window.getSelection();
+
+    range.setStart(y, 1);
+    selection!.removeAllRanges();
+    selection!.addRange(range);
+  };
+
   const revertSelectionStyle = (
     startId: string,
     endId: string,
@@ -702,7 +732,7 @@ const BlockEditor = (props: BlockEditorProps) => {
     }
   };
 
-  const getBlockStyle = (start: number, end: number) => {
+  const getBlockStyle = (start: number) => {
     let blockStyle: React.CSSProperties = {};
 
     if (block.styles[start].isBold) {
