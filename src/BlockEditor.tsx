@@ -30,7 +30,6 @@ const BlockEditor = (props: BlockEditorProps) => {
   const [backSpace, setBackspace] = useState(false);
   const [blockState, setBlockState] = useState<BlockState>("None");
   const { inlineStyleMap, keyBindingFn, blockStyle } = useBlockProvider();
-  const [clipboard, setClipboard] = useState<Block | null>(null);
 
   useEffect(() => {
     if (runAfterContentSet.current !== null) {
@@ -430,82 +429,150 @@ const BlockEditor = (props: BlockEditorProps) => {
 
   const onCopy = (e: React.ClipboardEvent) => {
     console.log("onCopy");
+    // fix clipboardData.setData("text/html",...)
 
     e.preventDefault();
     if (ranges.length === 0) {
       return;
     }
 
-    setClipboard({
-      blockID: "-1",
-      text: block.text.slice(ranges.offset, ranges.offset + ranges.length),
-      styles: block.styles.slice(ranges.offset, ranges.offset + ranges.length),
-    });
+    e.clipboardData.setData(
+      "text/plain",
+      block.text.slice(ranges.offset, ranges.offset + ranges.length)
+    );
+    e.clipboardData.setData(
+      "block/data",
+      JSON.stringify({
+        blockID: "-1",
+        text: block.text.slice(ranges.offset, ranges.offset + ranges.length),
+        styles: block.styles.slice(
+          ranges.offset,
+          ranges.offset + ranges.length
+        ),
+      })
+    );
   };
 
   const onPaste = (e: React.ClipboardEvent) => {
     console.log("onPaste");
-
+    // pass on to handler if they want to handle it
     e.preventDefault();
 
-    if (clipboard === null) {
+    if (e.clipboardData.getData("block/data") === "") {
+      // not internal
+      console.log("not internal");
+
+      // console.log(getSafeBodyFromHTML(html));
+      pasteExternalData(e);
       return;
     }
 
-    setBlockState("InsertMul");
+    const internal: Block = JSON.parse(e.clipboardData.getData("block/data"));
+    if (internal.text === e.clipboardData.getData("text/plain")) {
+      setBlockState("InsertMul");
 
-    if (ranges.length === 0) {
+      if (ranges.length === 0) {
+        const newText = block.text
+          .slice(0, ranges.offset)
+          .concat(
+            internal.text,
+            block.text.slice(ranges.offset, block.text.length)
+          );
+        const newStyles = block.styles
+          .slice(0, ranges.offset)
+          .concat(
+            internal.styles,
+            block.styles.slice(ranges.offset, block.styles.length)
+          );
+
+        setRanges((ranges) => {
+          return { offset: ranges.offset + internal.text.length, length: 0 };
+        });
+        onUpdateBlock(block.blockID, newText, newStyles);
+        return;
+      }
+
       const newText = block.text
         .slice(0, ranges.offset)
         .concat(
-          clipboard.text,
-          block.text.slice(ranges.offset, block.text.length)
+          internal.text,
+          block.text.slice(ranges.offset + ranges.length, block.text.length)
         );
       const newStyles = block.styles
         .slice(0, ranges.offset)
         .concat(
-          clipboard.styles,
-          block.styles.slice(ranges.offset, block.styles.length)
+          internal.styles,
+          block.styles.slice(ranges.offset + ranges.length, block.styles.length)
         );
 
-      setRanges((ranges) => {
-        return { offset: ranges.offset + clipboard.text.length, length: 0 };
-      });
       onUpdateBlock(block.blockID, newText, newStyles);
       return;
     }
 
+    console.log("not internal");
+    pasteExternalData(e);
+  };
+
+  const pasteExternalData = (e: React.ClipboardEvent) => {
+    setBlockState("InsertMul");
+    const text = e.clipboardData.getData("text");
     const newText = block.text
       .slice(0, ranges.offset)
       .concat(
-        clipboard.text,
+        text,
         block.text.slice(ranges.offset + ranges.length, block.text.length)
       );
+
+    let emptyStyles: CharacterMetadata[] = [];
+    for (let i = 0; i < text.length; i++) {
+      emptyStyles.push({
+        isBold: false,
+        isCode: false,
+        isItalic: false,
+        isUnderline: false,
+        isStrikethrough: false,
+      });
+    }
+
     const newStyles = block.styles
       .slice(0, ranges.offset)
       .concat(
-        clipboard.styles,
+        emptyStyles,
         block.styles.slice(ranges.offset + ranges.length, block.styles.length)
       );
 
+    setRanges((ranges) => {
+      return { offset: ranges.offset + text.length, length: 0 };
+    });
     onUpdateBlock(block.blockID, newText, newStyles);
   };
 
   const onCut = (e: React.ClipboardEvent) => {
     console.log("onCut");
+    // fix clipboardData.setData("text/html",...)
 
     e.preventDefault();
-
     if (ranges.length === 0) {
       return;
     }
 
+    e.clipboardData.setData(
+      "text/plain",
+      block.text.slice(ranges.offset, ranges.offset + ranges.length)
+    );
+    e.clipboardData.setData(
+      "block/data",
+      JSON.stringify({
+        blockID: "-1",
+        text: block.text.slice(ranges.offset, ranges.offset + ranges.length),
+        styles: block.styles.slice(
+          ranges.offset,
+          ranges.offset + ranges.length
+        ),
+      })
+    );
+
     setBlockState("DeleteMul");
-    setClipboard({
-      blockID: "-1",
-      text: block.text.slice(ranges.offset, ranges.offset + ranges.length),
-      styles: block.styles.slice(ranges.offset, ranges.offset + ranges.length),
-    });
 
     const newText = block.text
       .slice(0, ranges.offset)
@@ -706,3 +773,26 @@ const findRangesImmutable = (
     foundFn(cursor, haystack.length);
   }
 };
+
+// draftjs
+// Provides a dom node that will not execute scripts
+// https://developer.mozilla.org/en-US/docs/Web/API/DOMImplementation.createHTMLDocument
+// https://developer.mozilla.org/en-US/Add-ons/Code_snippets/HTML_to_DOM
+function getSafeBodyFromHTML(html: string): Element | null {
+  let doc;
+  let root = null;
+  html = html
+    .trim()
+    .replace(RegExp("\r", "g"), "")
+    .replace(RegExp("&nbsp;", "g"), " ")
+    .replace(RegExp("&#13;?", "g"), "")
+    .replace(RegExp("&#8203;?", "g"), "");
+  // Provides a safe context
+  if (document.implementation && document.implementation.createHTMLDocument) {
+    doc = document.implementation.createHTMLDocument("foo");
+    if (!doc.documentElement) throw new Error("Missing doc.documentElement");
+    doc.documentElement.innerHTML = html;
+    root = doc.getElementsByTagName("body")[0];
+  }
+  return root;
+}
