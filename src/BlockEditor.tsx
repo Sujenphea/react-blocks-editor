@@ -114,6 +114,7 @@ const BlockEditor = (props: BlockEditorProps) => {
           break;
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [block]);
 
   // updates internal state
@@ -462,7 +463,6 @@ const BlockEditor = (props: BlockEditorProps) => {
       // not internal
       console.log("not internal");
 
-      // console.log(getSafeBodyFromHTML(html));
       pasteExternalData(e);
       return;
     }
@@ -773,26 +773,3 @@ const findRangesImmutable = (
     foundFn(cursor, haystack.length);
   }
 };
-
-// draftjs
-// Provides a dom node that will not execute scripts
-// https://developer.mozilla.org/en-US/docs/Web/API/DOMImplementation.createHTMLDocument
-// https://developer.mozilla.org/en-US/Add-ons/Code_snippets/HTML_to_DOM
-function getSafeBodyFromHTML(html: string): Element | null {
-  let doc;
-  let root = null;
-  html = html
-    .trim()
-    .replace(RegExp("\r", "g"), "")
-    .replace(RegExp("&nbsp;", "g"), " ")
-    .replace(RegExp("&#13;?", "g"), "")
-    .replace(RegExp("&#8203;?", "g"), "");
-  // Provides a safe context
-  if (document.implementation && document.implementation.createHTMLDocument) {
-    doc = document.implementation.createHTMLDocument("foo");
-    if (!doc.documentElement) throw new Error("Missing doc.documentElement");
-    doc.documentElement.innerHTML = html;
-    root = doc.getElementsByTagName("body")[0];
-  }
-  return root;
-}
