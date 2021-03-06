@@ -25,7 +25,7 @@ type BlockEditorProps = {
   focus: Boolean;
 };
 
-const BlockEditor = (props: BlockEditorProps) => {
+export const BlockEditor = (props: BlockEditorProps) => {
   const [content, setContent] = useState("<div></div>");
   const [block, setBlock] = useState<Block>({
     blockID: "",
@@ -773,8 +773,6 @@ const BlockEditor = (props: BlockEditorProps) => {
     />
   );
 };
-
-export default BlockEditor;
 
 // helper to reduce span for setup (for now)
 const findRangesImmutable = (

@@ -1,8 +1,11 @@
 {
-  "name": "caesar",
+  "name": "@sujen/block-editor",
   "version": "0.1.0",
-  "private": true,
-  "dependencies": {
+  "private": false,
+  "module": "dist/block-editor.esm.js",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "peer-dependencies": {
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
@@ -15,9 +18,12 @@
     "react-scripts": "^3.4.4",
     "typescript": "~3.7.2"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "tsdx build --format esm,cjs",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix"
@@ -38,6 +44,10 @@
     ]
   },
   "devDependencies": {
+    "@ampproject/rollup-plugin-closure-compiler": "^0.26.0",
+    "@types/node": "^12.0.0",
+    "@types/react": "^16.9.0",
+    "@types/react-dom": "^16.9.0",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.1",
     "cypress": "^6.5.0",
@@ -48,6 +58,12 @@
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-react": "^7.21.2",
     "eslint-plugin-react-hooks": "^4.2.0",
-    "prettier": "^2.1.2"
-  }
+    "prettier": "^2.1.2",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-scripts": "^3.4.4",
+    "tsdx": "^0.14.1"
+  },
+  "author": "",
+  "license": "MIT"
 }

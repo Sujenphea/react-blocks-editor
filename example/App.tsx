@@ -1,5 +1,5 @@
 import React from "react";
-import { BlockStyleMap, BlockProvider, StyleType } from "./BlockContext";
+import { BlockStyleMap, BlockProvider, StyleType } from "../src/BlockContext";
 import { Editor } from "./Editor";
 
 function App() {
