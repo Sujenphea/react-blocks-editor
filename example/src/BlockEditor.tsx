@@ -71,10 +71,11 @@ export const BlockEditor = (props: BlockEditorProps) => {
     styles: CharacterMetadata[]
   ) => {
     props.updateBlock(id, text, styles);
-    setBlock({ blockID: id, text: text, styles: styles });
+    setBlock({blockID: id, text: text, styles: styles})
   };
 
   const updateContent = () => {
+    console.log("updateContent")
     let newContent: JSX.Element[] = [];
     let dataTokenIndex = 1;
     const styleList = block.styles.map((style) => {
@@ -427,6 +428,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
 
     setBlockState("Insert");
     if (ranges.offset === 0) {
+      console.log("insert, ranges.offset === 0");
       const newStyles = [defaultStyle].concat(
         block.styles.slice(ranges.offset + ranges.length, block.styles.length)
       );
@@ -434,6 +436,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
       return;
     }
 
+    console.log("insert, ranges.offset !== 0");
     const newStyles = block.styles
       .slice(0, ranges.offset)
       .concat(

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Block } from "../src/Block";
-import BlockEditor from "../src/BlockEditor";
-import { CharacterMetadata } from "../src/CharacterMetadata";
+import { Block } from "../../src/Block";
+import { BlockEditor } from "../../src/BlockEditor";
+import { CharacterMetadata } from "../../src/CharacterMetadata";
 
 export const Editor = () => {
   const [blocks, setBlocks] = useState<Block[]>([
