@@ -6,10 +6,10 @@
 
 import ReactDOMServer from "react-dom/server";
 import React, { useEffect, useRef, useState } from "react";
-import { Block } from "./Block";
-import { CharacterMetadata } from "./CharacterMetadata";
-import { SelectionRanges } from "./SelectionRanges";
 import { useBlockProvider } from "./BlockContext";
+import { CharacterMetadata } from "./CharacterMetadata";
+import { Block } from "./Block";
+import { SelectionRanges } from "./SelectionRanges";
 
 type BlockState =
   | "Style"
@@ -52,6 +52,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
 
   // updates content
   useEffect(() => {
+    console.log(block.styles);
     updateContent();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [block]);
@@ -60,6 +61,8 @@ export const BlockEditor = (props: BlockEditorProps) => {
   useEffect(() => {
     if (props.block && props.block !== block) {
       setBlock(props.block);
+    } else {
+      setBlock({ blockID: "1", text: "", styles: [] });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.block]);
@@ -377,7 +380,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
       e.preventDefault();
     }
 
-    if (e.key === "Backspace") {
+    if (e.key === "Backspace" && block.text.length !== 0) {
       setBackspace(true);
     }
   };
@@ -480,6 +483,12 @@ export const BlockEditor = (props: BlockEditorProps) => {
     console.log("onPaste");
     // pass on to handler if they want to handle it
     e.preventDefault();
+    if (
+      e.clipboardData.getData("text") === "" &&
+      e.clipboardData.getData("block/data") === ""
+    ) {
+      return;
+    }
 
     if (e.clipboardData.getData("block/data") === "") {
       // not internal

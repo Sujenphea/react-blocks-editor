@@ -45,5 +45,8 @@
     "react-scripts": "^3.4.4"
   },
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "cypress": "^6.6.0"
+  }
 }
