@@ -19,10 +19,10 @@ type BlockState =
   | "DeleteMul"
   | "None";
 
-type BlockEditorProps = {
-  block: Block;
-  updateBlock: (id: string, text: string, styles: CharacterMetadata[]) => void;
-  focus: Boolean;
+export type BlockEditorProps = {
+  block?: Block;
+  updateBlock?: (id: string, text: string, styles: CharacterMetadata[]) => void;
+  focus?: Boolean;
 };
 
 export const BlockEditor = (props: BlockEditorProps) => {
@@ -58,7 +58,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
 
   // updates internal state
   useEffect(() => {
-    if (props.block !== block) {
+    if (props.block && props.block !== block) {
       setBlock(props.block);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -70,7 +70,9 @@ export const BlockEditor = (props: BlockEditorProps) => {
     text: string,
     styles: CharacterMetadata[]
   ) => {
-    props.updateBlock(id, text, styles);
+    if (props.updateBlock) {
+      props.updateBlock(id, text, styles);
+    }
     setBlock({ blockID: id, text: text, styles: styles });
   };
 

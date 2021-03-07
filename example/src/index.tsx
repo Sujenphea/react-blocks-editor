@@ -8,11 +8,7 @@ const Index = () => {
     <div>
       <h1>Hello world</h1>
       <BlockProvider>
-        <BlockEditor
-          block={{blockID: "1", text: "", styles: []}}
-          updateBlock={(id, text, styles) => console.log(styles)}
-          focus={true}
-        ></BlockEditor>
+        <BlockEditor></BlockEditor>
       </BlockProvider>
     </div>
   );

@@ -19,10 +19,10 @@ type BlockState =
   | "DeleteMul"
   | "None";
 
-type BlockEditorProps = {
-  block: Block;
-  updateBlock: (id: string, text: string, styles: CharacterMetadata[]) => void;
-  focus: Boolean;
+export type BlockEditorProps = {
+  block?: Block;
+  updateBlock?: (id: string, text: string, styles: CharacterMetadata[]) => void;
+  focus?: Boolean;
 };
 
 export const BlockEditor = (props: BlockEditorProps) => {
@@ -58,7 +58,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
 
   // updates internal state
   useEffect(() => {
-    if (props.block !== block) {
+    if (props.block && props.block !== block) {
       setBlock(props.block);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -70,12 +70,13 @@ export const BlockEditor = (props: BlockEditorProps) => {
     text: string,
     styles: CharacterMetadata[]
   ) => {
-    props.updateBlock(id, text, styles);
-    setBlock({blockID: id, text: text, styles: styles})
+    if (props.updateBlock) {
+      props.updateBlock(id, text, styles);
+    }
+    setBlock({ blockID: id, text: text, styles: styles });
   };
 
   const updateContent = () => {
-    console.log("updateContent")
     let newContent: JSX.Element[] = [];
     let dataTokenIndex = 1;
     const styleList = block.styles.map((style) => {
@@ -428,7 +429,6 @@ export const BlockEditor = (props: BlockEditorProps) => {
 
     setBlockState("Insert");
     if (ranges.offset === 0) {
-      console.log("insert, ranges.offset === 0");
       const newStyles = [defaultStyle].concat(
         block.styles.slice(ranges.offset + ranges.length, block.styles.length)
       );
@@ -436,7 +436,6 @@ export const BlockEditor = (props: BlockEditorProps) => {
       return;
     }
 
-    console.log("insert, ranges.offset !== 0");
     const newStyles = block.styles
       .slice(0, ranges.offset)
       .concat(
