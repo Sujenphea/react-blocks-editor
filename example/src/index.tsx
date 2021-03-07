@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { BlockProvider, BlockStyleMap, StyleType } from "./BlockContext";
 import { BlockEditor } from "./BlockEditor";
+import { RawBlock } from "./RawBlock";
 
 const Index = () => {
   const customInlineStyleMap: BlockStyleMap = {
@@ -32,6 +33,10 @@ const Index = () => {
     }
   };
 
+  const onChange = (block: RawBlock) => {
+    console.log(block.getAttributes());
+  };
+
   return (
     <div>
       <h1>Hello world</h1>
@@ -40,7 +45,7 @@ const Index = () => {
         customKeyBindingFn={customKeyBindingFn}
         customBlockStyle={{ color: "burlywood" }}
       >
-        <BlockEditor></BlockEditor>
+        <BlockEditor onChange={onChange}></BlockEditor>
       </BlockProvider>
     </div>
   );

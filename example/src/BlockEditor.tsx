@@ -10,6 +10,8 @@ import { useBlockProvider } from "./BlockContext";
 import { CharacterMetadata } from "./CharacterMetadata";
 import { Block } from "./Block";
 import { SelectionRanges } from "./SelectionRanges";
+import findRangesImmutable from "./findRangesImmutable";
+import { RawBlock } from "./RawBlock";
 
 type BlockState =
   | "Style"
@@ -21,7 +23,7 @@ type BlockState =
 
 export type BlockEditorProps = {
   block?: Block;
-  updateBlock?: (id: string, text: string, styles: CharacterMetadata[]) => void;
+  onChange?: (block: RawBlock) => void;
   focus?: Boolean;
 };
 
@@ -52,7 +54,6 @@ export const BlockEditor = (props: BlockEditorProps) => {
 
   // updates content
   useEffect(() => {
-    console.log(block.styles);
     updateContent();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [block]);
@@ -73,8 +74,8 @@ export const BlockEditor = (props: BlockEditorProps) => {
     text: string,
     styles: CharacterMetadata[]
   ) => {
-    if (props.updateBlock) {
-      props.updateBlock(id, text, styles);
+    if (props.onChange) {
+      props.onChange(new RawBlock(id, text, styles));
     }
     setBlock({ blockID: id, text: text, styles: styles });
   };
@@ -787,32 +788,4 @@ export const BlockEditor = (props: BlockEditorProps) => {
       dangerouslySetInnerHTML={{ __html: content }}
     />
   );
-};
-
-// helper to reduce span for setup (for now)
-const findRangesImmutable = (
-  haystack: string[],
-  areEqualFn: (a: string, b: string) => boolean,
-  filterFn: (value: string) => boolean,
-  foundFn: (start: number, end: number) => void
-) => {
-  if (!haystack.length) {
-    return;
-  }
-
-  let cursor: number = 0;
-
-  haystack.reduce((value: string, nextValue, nextIndex) => {
-    if (!areEqualFn(value, nextValue)) {
-      if (filterFn(value)) {
-        foundFn(cursor, nextIndex);
-      }
-      cursor = nextIndex;
-    }
-    return nextValue;
-  });
-
-  if (filterFn(haystack[haystack.length - 1])) {
-    foundFn(cursor, haystack.length);
-  }
 };
