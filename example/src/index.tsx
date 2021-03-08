@@ -33,8 +33,6 @@ const Index = () => {
     }
   };
 
-  const customBlockStyle = { color: "burlywood", backgroundColor: "green" };
-
   const onChange = (block: RawBlock) => {
     console.log(block.getAttributes());
   };
@@ -45,7 +43,7 @@ const Index = () => {
       <BlockProvider
         customInlineStyleMap={customInlineStyleMap}
         customKeyBindingFn={customKeyBindingFn}
-        customBlockStyle={customBlockStyle}
+        customBlockStyle={{ color: "burlywood" }}
       >
         <BlockEditor onChange={onChange}></BlockEditor>
       </BlockProvider>
