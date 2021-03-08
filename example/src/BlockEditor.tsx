@@ -22,7 +22,7 @@ type BlockState =
   | "None";
 
 export type BlockEditorProps = {
-  block?: Block;
+  block?: RawBlock;
   onChange?: (block: RawBlock) => void;
   focus?: Boolean;
 };
@@ -30,7 +30,7 @@ export type BlockEditorProps = {
 export const BlockEditor = (props: BlockEditorProps) => {
   const [content, setContent] = useState("<div></div>");
   const [block, setBlock] = useState<Block>({
-    blockID: "",
+    id: "1",
     text: "",
     styles: [],
   });
@@ -60,10 +60,10 @@ export const BlockEditor = (props: BlockEditorProps) => {
 
   // updates internal state
   useEffect(() => {
-    if (props.block && props.block !== block) {
+    if (props.block && !equalBlock(block, props.block)) {
       setBlock(props.block);
-    } else {
-      setBlock({ blockID: "1", text: "", styles: [] });
+    } else if (!props.block) {
+      setBlock({ id: "1", text: "", styles: [] });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.block]);
@@ -77,7 +77,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
     if (props.onChange) {
       props.onChange(new RawBlock(id, text, styles));
     }
-    setBlock({ blockID: id, text: text, styles: styles });
+    setBlock({ id: id, text: text, styles: styles });
   };
 
   const updateContent = () => {
@@ -161,6 +161,14 @@ export const BlockEditor = (props: BlockEditorProps) => {
     };
   };
 
+  const equalBlock = (block: Block, rawBlock: RawBlock) => {
+    return (
+      block.id === rawBlock.id &&
+      block.text === rawBlock.text &&
+      JSON.stringify(block.styles) === JSON.stringify(rawBlock.styles)
+    );
+  };
+
   // handlers
   const onBold = (toAdd: boolean) => {
     console.log("bold");
@@ -176,7 +184,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
       });
     }
     onUpdateBlock(
-      block.blockID,
+      block.id,
       block.text,
       block.styles
         .slice(0, ranges.offset)
@@ -212,7 +220,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
     }
 
     onUpdateBlock(
-      block.blockID,
+      block.id,
       block.text,
       block.styles
         .slice(0, ranges.offset)
@@ -248,7 +256,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
     }
 
     onUpdateBlock(
-      block.blockID,
+      block.id,
       block.text,
       block.styles
         .slice(0, ranges.offset)
@@ -284,7 +292,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
     }
 
     onUpdateBlock(
-      block.blockID,
+      block.id,
       block.text,
       block.styles
         .slice(0, ranges.offset)
@@ -320,7 +328,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
     }
 
     onUpdateBlock(
-      block.blockID,
+      block.id,
       block.text,
       block.styles
         .slice(0, ranges.offset)
@@ -390,7 +398,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
     const input = e.currentTarget.textContent;
 
     if (!input) {
-      onUpdateBlock(block.blockID, "", []);
+      onUpdateBlock(block.id, "", []);
       setBackspace(false);
       return;
     }
@@ -410,7 +418,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
               block.styles.length
             )
           );
-        onUpdateBlock(block.blockID, input, newStyles);
+        onUpdateBlock(block.id, input, newStyles);
         return;
       }
 
@@ -419,7 +427,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
         .slice(0, ranges.offset - 1)
         .concat(block.styles.slice(ranges.offset, block.styles.length));
 
-      onUpdateBlock(block.blockID, input, newStyles);
+      onUpdateBlock(block.id, input, newStyles);
       return;
     }
 
@@ -436,7 +444,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
       const newStyles = [defaultStyle].concat(
         block.styles.slice(ranges.offset + ranges.length, block.styles.length)
       );
-      onUpdateBlock(block.blockID, input, newStyles);
+      onUpdateBlock(block.id, input, newStyles);
       return;
     }
 
@@ -446,7 +454,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
         block.styles[ranges.offset - 1],
         block.styles.slice(ranges.offset + ranges.length, block.styles.length)
       );
-    onUpdateBlock(block.blockID, input, newStyles);
+    onUpdateBlock(block.id, input, newStyles);
     return;
   };
 
@@ -470,7 +478,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
     e.clipboardData.setData(
       "block/data",
       JSON.stringify({
-        blockID: "-1",
+        id: "-1",
         text: block.text.slice(ranges.offset, ranges.offset + ranges.length),
         styles: block.styles.slice(
           ranges.offset,
@@ -520,7 +528,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
         setRanges((ranges) => {
           return { offset: ranges.offset + internal.text.length, length: 0 };
         });
-        onUpdateBlock(block.blockID, newText, newStyles);
+        onUpdateBlock(block.id, newText, newStyles);
         return;
       }
 
@@ -537,7 +545,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
           block.styles.slice(ranges.offset + ranges.length, block.styles.length)
         );
 
-      onUpdateBlock(block.blockID, newText, newStyles);
+      onUpdateBlock(block.id, newText, newStyles);
       return;
     }
 
@@ -576,7 +584,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
     setRanges((ranges) => {
       return { offset: ranges.offset + text.length, length: 0 };
     });
-    onUpdateBlock(block.blockID, newText, newStyles);
+    onUpdateBlock(block.id, newText, newStyles);
   };
 
   const onCut = (e: React.ClipboardEvent) => {
@@ -595,7 +603,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
     e.clipboardData.setData(
       "block/data",
       JSON.stringify({
-        blockID: "-1",
+        id: "-1",
         text: block.text.slice(ranges.offset, ranges.offset + ranges.length),
         styles: block.styles.slice(
           ranges.offset,
@@ -618,7 +626,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
         block.styles.slice(ranges.offset + ranges.length, block.styles.length)
       );
 
-    onUpdateBlock(block.blockID, newText, newStyles);
+    onUpdateBlock(block.id, newText, newStyles);
   };
 
   const onFocus = () => {
@@ -772,7 +780,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
 
   return (
     <div
-      id={block.blockID}
+      id={block.id}
       style={{
         ...blockStyle,
         minHeight: "20px",

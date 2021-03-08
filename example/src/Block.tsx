@@ -1,7 +1,7 @@
 import { CharacterMetadata } from "./CharacterMetadata";
 
 export type Block = {
-  blockID: string;
+  id: string;
   text: string;
   styles: CharacterMetadata[];
 };

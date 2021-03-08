@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { BlockProvider, BlockStyleMap, StyleType } from "./BlockContext";
 import { BlockEditor } from "./BlockEditor";
+import { CharacterMetadata } from "./CharacterMetadata";
 import { RawBlock } from "./RawBlock";
 
 const Index = () => {
@@ -37,6 +38,14 @@ const Index = () => {
     console.log(block.getAttributes());
   };
 
+  const defaultStyle: CharacterMetadata = {
+    isBold: false,
+    isCode: false,
+    isUnderline: false,
+    isItalic: false,
+    isStrikethrough: false,
+  };
+
   return (
     <div>
       <h1>Hello world</h1>
@@ -45,7 +54,18 @@ const Index = () => {
         customKeyBindingFn={customKeyBindingFn}
         customBlockStyle={{ color: "burlywood" }}
       >
-        <BlockEditor onChange={onChange}></BlockEditor>
+        <BlockEditor
+          block={
+            new RawBlock("1", "hello", [
+              defaultStyle,
+              defaultStyle,
+              defaultStyle,
+              defaultStyle,
+              defaultStyle,
+            ])
+          }
+          onChange={onChange}
+        ></BlockEditor>
       </BlockProvider>
     </div>
   );
