@@ -1,6 +1,6 @@
 {
   "name": "@sujen/blocks-editor",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": false,
   "module": "dist/block-editor.esm.js",
   "main": "dist/index.js",

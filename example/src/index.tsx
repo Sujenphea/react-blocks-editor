@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import { BlockProvider, BlockStyleMap, StyleType } from "./BlockContext";
 import { BlockEditor } from "./BlockEditor";
 import { CharacterMetadata } from "./CharacterMetadata";
-import { RawBlock } from "./RawBlock";
+import { Block } from "./Block";
 
 const Index = () => {
   const customInlineStyleMap: BlockStyleMap = {
@@ -34,7 +34,7 @@ const Index = () => {
     }
   };
 
-  const onChange = (block: RawBlock) => {
+  const onChange = (block: Block) => {
     console.log(block.getAttributes());
   };
 
@@ -56,7 +56,7 @@ const Index = () => {
       >
         <BlockEditor
           block={
-            new RawBlock("1", "hello", [
+            new Block("1", "hello", [
               defaultStyle,
               defaultStyle,
               defaultStyle,

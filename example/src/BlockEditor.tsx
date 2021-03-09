@@ -8,10 +8,9 @@ import ReactDOMServer from "react-dom/server";
 import React, { useEffect, useRef, useState } from "react";
 import { useBlockProvider } from "./BlockContext";
 import { CharacterMetadata } from "./CharacterMetadata";
-import { Block } from "./Block";
 import { SelectionRanges } from "./SelectionRanges";
 import findRangesImmutable from "./findRangesImmutable";
-import { RawBlock } from "./RawBlock";
+import { Block } from "./Block";
 
 type BlockState =
   | "Style"
@@ -22,18 +21,14 @@ type BlockState =
   | "None";
 
 export type BlockEditorProps = {
-  block?: RawBlock;
-  onChange?: (block: RawBlock) => void;
+  block?: Block;
+  onChange?: (block: Block) => void;
   focus?: Boolean;
 };
 
 export const BlockEditor = (props: BlockEditorProps) => {
   const [content, setContent] = useState("<div></div>");
-  const [block, setBlock] = useState<Block>({
-    id: "1",
-    text: "",
-    styles: [],
-  });
+  const [block, setBlock] = useState<Block>(new Block("1", "", []));
   const [ranges, setRanges] = useState<SelectionRanges>({
     offset: 0,
     length: 0,
@@ -60,10 +55,10 @@ export const BlockEditor = (props: BlockEditorProps) => {
 
   // updates internal state
   useEffect(() => {
-    if (props.block && !equalBlock(block, props.block)) {
+    if (props.block && props.block !== block) {
       setBlock(props.block);
     } else if (!props.block) {
-      setBlock({ id: "1", text: "", styles: [] });
+      setBlock(new Block("1", "", []));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.block]);
@@ -74,10 +69,11 @@ export const BlockEditor = (props: BlockEditorProps) => {
     text: string,
     styles: CharacterMetadata[]
   ) => {
+    const newBlock = new Block(id, text, styles);
     if (props.onChange) {
-      props.onChange(new RawBlock(id, text, styles));
+      props.onChange(newBlock);
     }
-    setBlock({ id: id, text: text, styles: styles });
+    setBlock(newBlock);
   };
 
   const updateContent = () => {
@@ -159,14 +155,6 @@ export const BlockEditor = (props: BlockEditorProps) => {
         setFocused(true);
       }
     };
-  };
-
-  const equalBlock = (block: Block, rawBlock: RawBlock) => {
-    return (
-      block.id === rawBlock.id &&
-      block.text === rawBlock.text &&
-      JSON.stringify(block.styles) === JSON.stringify(rawBlock.styles)
-    );
   };
 
   // handlers
