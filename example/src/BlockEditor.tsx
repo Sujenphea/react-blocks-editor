@@ -119,12 +119,6 @@ export const BlockEditor = (props: BlockEditorProps) => {
       }
     );
 
-    let newContentStatic = ReactDOMServer.renderToStaticMarkup(
-      <div>{newContent}</div>
-    );
-
-    setContent(newContentStatic);
-
     // modify caret/selection position
     runAfterContentSet.current = () => {
       switch (blockState) {
@@ -155,6 +149,12 @@ export const BlockEditor = (props: BlockEditorProps) => {
         setFocused(true);
       }
     };
+
+    const newContentStatic = ReactDOMServer.renderToStaticMarkup(
+      <div className={"blockDiv"}>{newContent}</div>
+    );
+
+    setContent(newContentStatic);
   };
 
   // handlers
@@ -621,12 +621,16 @@ export const BlockEditor = (props: BlockEditorProps) => {
     console.log("onFocus");
 
     const x = document.getElementsByClassName("blockSpans");
-    const y = x[x.length - 1] as HTMLElement;
-
     let range = document.createRange();
-    const selection = window.getSelection();
 
-    range.setStart(y, 1);
+    if (x.length === 0) {
+      const y = document.getElementsByClassName("blockDiv");
+      range.setStart(y[0], 0);
+    } else {
+      range.setStart(x[x.length - 1], 1);
+    }
+
+    const selection = window.getSelection();
     selection!.removeAllRanges();
     selection!.addRange(range);
   };

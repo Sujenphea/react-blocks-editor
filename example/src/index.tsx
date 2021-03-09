@@ -2,8 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { BlockProvider, BlockStyleMap, StyleType } from "./BlockContext";
 import { BlockEditor } from "./BlockEditor";
-import { CharacterMetadata } from "./CharacterMetadata";
 import { Block } from "./Block";
+import { CharacterMetadata } from "./CharacterMetadata";
 
 const Index = () => {
   const customInlineStyleMap: BlockStyleMap = {
