@@ -7,7 +7,7 @@
 import ReactDOMServer from "react-dom/server";
 import React, { useEffect, useRef, useState } from "react";
 import { useBlockProvider } from "./BlockContext";
-import { CharacterMetadata } from "./CharacterMetadata";
+import { CharacterMetadata, defaultCharMeta } from "./CharacterMetadata";
 import { SelectionRanges } from "./SelectionRanges";
 import findRangesImmutable from "./findRangesImmutable";
 import { Block } from "./Block";
@@ -22,8 +22,15 @@ type BlockState =
 
 export type BlockEditorProps = {
   block?: Block;
-  onChange?: (block: Block) => void;
   focus?: Boolean;
+  styles?: React.CSSProperties;
+  onChange?: (block: Block) => void;
+  onKeyDown?: (
+    e: React.KeyboardEvent,
+    selection: SelectionRanges
+  ) => "handled" | null | void;
+  onPaste?: (e: React.ClipboardEvent) => void;
+  onBlur?: (e: React.FocusEvent<HTMLDivElement>) => void;
 };
 
 export const BlockEditor = (props: BlockEditorProps) => {
@@ -56,6 +63,27 @@ export const BlockEditor = (props: BlockEditorProps) => {
   // updates internal state
   useEffect(() => {
     if (props.block && props.block !== block) {
+      const sLength = props.block.styles.length;
+      const bLength = props.block.text.length;
+
+      if (bLength > sLength) {
+        let styles = props.block.styles;
+        for (let i = 0; i < bLength - sLength; i++) {
+          styles = styles.concat(defaultCharMeta);
+        }
+
+        setBlock(new Block(props.block.id, props.block.text, styles));
+        return;
+      }
+
+      if (bLength < sLength) {
+        const diff = sLength - bLength;
+        const newStyles = props.block.styles.slice(-diff, sLength);
+
+        setBlock(new Block(props.block.id, props.block.text, newStyles));
+        return;
+      }
+
       setBlock(props.block);
     } else if (!props.block) {
       setBlock(new Block("1", "", []));
@@ -107,7 +135,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
         newContent.push(
           <span
             key={dataTokenIndex}
-            style={getBlockStyle(start)}
+            style={{ ...getBlockStyle(start), ...props.styles }}
             id={"h".repeat(dataTokenIndex)}
             className="blockSpans"
           >
@@ -373,6 +401,13 @@ export const BlockEditor = (props: BlockEditorProps) => {
       }
     }
 
+    if (typeof props.onKeyDown !== "undefined") {
+      const x = props.onKeyDown(e, ranges);
+      if (x === "handled") {
+        return;
+      }
+    }
+
     if (e.key === "Enter") {
       e.preventDefault();
     }
@@ -478,8 +513,12 @@ export const BlockEditor = (props: BlockEditorProps) => {
 
   const onPaste = (e: React.ClipboardEvent) => {
     console.log("onPaste");
-    // pass on to handler if they want to handle it
     e.preventDefault();
+
+    if (typeof props.onPaste !== "undefined") {
+      props.onPaste(e);
+    }
+
     if (
       e.clipboardData.getData("text") === "" &&
       e.clipboardData.getData("block/data") === ""
@@ -635,6 +674,13 @@ export const BlockEditor = (props: BlockEditorProps) => {
     selection!.addRange(range);
   };
 
+  const onBlur = (e: React.FocusEvent<HTMLDivElement>) => {
+    console.log("onBlur");
+    if (typeof props.onBlur !== "undefined") {
+      props.onBlur(e);
+    }
+  };
+
   const revertSelectionStyle = (
     startId: string,
     endId: string,
@@ -785,6 +831,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
       onCopy={onCopy}
       onPaste={onPaste}
       onCut={onCut}
+      onBlur={onBlur}
       dangerouslySetInnerHTML={{ __html: content }}
     />
   );

@@ -5,3 +5,11 @@ export type CharacterMetadata = {
   isCode: boolean;
   isStrikethrough: boolean;
 };
+
+export const defaultCharMeta: CharacterMetadata = {
+  isBold: false,
+  isItalic: false,
+  isUnderline: false,
+  isCode: false,
+  isStrikethrough: false,
+};

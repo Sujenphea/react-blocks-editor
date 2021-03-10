@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import { BlockProvider, BlockStyleMap, StyleType } from "./BlockContext";
 import { BlockEditor } from "./BlockEditor";
 import { Block } from "./Block";
-import { CharacterMetadata } from "./CharacterMetadata";
+import { CharacterMetadata, defaultCharMeta } from "./CharacterMetadata";
 
 const Index = () => {
   const customInlineStyleMap: BlockStyleMap = {
@@ -38,14 +38,6 @@ const Index = () => {
     console.log(block.getAttributes());
   };
 
-  const defaultStyle: CharacterMetadata = {
-    isBold: false,
-    isCode: false,
-    isUnderline: false,
-    isItalic: false,
-    isStrikethrough: false,
-  };
-
   return (
     <div>
       <h1>Hello world</h1>
@@ -56,12 +48,12 @@ const Index = () => {
       >
         <BlockEditor
           block={
-            new Block("1", "hello", [
-              defaultStyle,
-              defaultStyle,
-              defaultStyle,
-              defaultStyle,
-              defaultStyle,
+            new Block("1", "he", [
+              defaultCharMeta,
+              defaultCharMeta,
+              defaultCharMeta,
+              defaultCharMeta,
+              defaultCharMeta,
             ])
           }
           onChange={onChange}

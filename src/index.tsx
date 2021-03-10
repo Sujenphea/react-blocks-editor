@@ -2,3 +2,5 @@
 
 export { BlockEditor } from "./BlockEditor";
 export { BlockProvider } from "./BlockContext";
+export { Block } from "./Block";
+export type { SelectionRanges } from "./SelectionRanges";
