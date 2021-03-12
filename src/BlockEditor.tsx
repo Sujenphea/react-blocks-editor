@@ -39,6 +39,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
   const [ranges, setRanges] = useState<SelectionRanges>({
     offset: 0,
     length: 0,
+    backwards: null,
   });
   const [backSpace, setBackspace] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -366,6 +367,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
+    // console.log("keydown");
     if (keyBindingFn) {
       const result = keyBindingFn(e);
       switch (result) {
@@ -402,6 +404,8 @@ export const BlockEditor = (props: BlockEditorProps) => {
     }
 
     if (typeof props.onKeyDown !== "undefined") {
+      // findSelection();
+      // console.log(ranges);
       const x = props.onKeyDown(e, ranges);
       if (x === "handled") {
         return;
@@ -553,7 +557,11 @@ export const BlockEditor = (props: BlockEditorProps) => {
           );
 
         setRanges((ranges) => {
-          return { offset: ranges.offset + internal.text.length, length: 0 };
+          return {
+            offset: ranges.offset + internal.text.length,
+            length: 0,
+            backwards: null,
+          };
         });
         onUpdateBlock(block.id, newText, newStyles);
         return;
@@ -609,7 +617,11 @@ export const BlockEditor = (props: BlockEditorProps) => {
       );
 
     setRanges((ranges) => {
-      return { offset: ranges.offset + text.length, length: 0 };
+      return {
+        offset: ranges.offset + text.length,
+        length: 0,
+        backwards: null,
+      };
     });
     onUpdateBlock(block.id, newText, newStyles);
   };
@@ -715,12 +727,18 @@ export const BlockEditor = (props: BlockEditorProps) => {
   };
 
   // find selection range
-  const findSelection: () => void = () => {
+  const findSelection: () => SelectionRanges = () => {
     const selection = window.getSelection();
 
+    // div: no selection basically
     if (selection?.anchorNode?.nodeType === 1) {
-      setRanges({ offset: block.text.length, length: 0 });
-      return;
+      const ranges: SelectionRanges = {
+        offset: block.text.length,
+        length: 0,
+        backwards: null,
+      };
+      setRanges(ranges);
+      return ranges;
     }
 
     const first = selection?.anchorNode?.parentNode;
@@ -730,38 +748,54 @@ export const BlockEditor = (props: BlockEditorProps) => {
 
     let metFirst = false;
     let metSecond = false;
-    const same = first === second;
     let offset = 0;
     let length = 0;
 
     for (let i = 0; i < children!.length; i++) {
-      if (same) {
-        // within same span
-        if (children![i].isEqualNode(first as Node)) {
-          const curO =
-            offset + Math.min(selection!.anchorOffset, selection!.focusOffset);
-          const curL = Math.abs(
-            selection!.anchorOffset - selection!.focusOffset
-          );
-
-          setRanges((range) => ({
-            ...range,
+      // within same span
+      if (children![i].isEqualNode(first as Node)) {
+        if (selection!.anchorOffset > selection!.focusOffset) {
+          // backwards
+          const curO = offset + selection!.focusOffset;
+          const curL = selection!.anchorOffset - selection!.focusOffset;
+          const ranges = {
             offset: curO,
             length: curL,
-          }));
+            backwards: true,
+          };
+          setRanges(ranges);
+          return ranges;
+        } else if (selection!.anchorOffset === selection!.focusOffset) {
+          // none
+          const curO = offset + selection!.focusOffset;
+          const ranges = {
+            offset: curO,
+            length: 0,
+            backwards: null,
+          };
+          setRanges(ranges);
+          return ranges;
+        } else {
+          // forwards
+          const curO = offset + selection!.anchorOffset;
+          const curL = selection!.focusOffset - selection!.anchorOffset;
+          const ranges: SelectionRanges = {
+            offset: curO,
+            length: curL,
+            backwards: false,
+          };
+          setRanges(ranges);
+          return ranges;
         }
-        offset += children![i].textContent!.length;
       } else if (metFirst) {
         // forwards
         if (children![i].isEqualNode(second as Node)) {
           const curO = offset + selection!.anchorOffset;
           const curL = length + selection!.focusOffset;
 
-          setRanges((range) => ({
-            ...range,
-            offset: curO,
-            length: curL,
-          }));
+          const ranges = { offset: curO, length: curL, backwards: false };
+          setRanges(ranges);
+          return ranges;
         }
         length += children![i].textContent!.length;
       } else if (metSecond) {
@@ -769,11 +803,10 @@ export const BlockEditor = (props: BlockEditorProps) => {
         if (children![i].isEqualNode(first as Node)) {
           const curO = offset + selection!.focusOffset;
           const curL = length + selection!.anchorOffset;
-          setRanges((range) => ({
-            ...range,
-            offset: curO,
-            length: curL,
-          }));
+
+          const ranges = { offset: curO, length: curL, backwards: true };
+          setRanges(ranges);
+          return ranges;
         }
         length += children![i].textContent!.length;
       } else if (children![i].isEqualNode(first as Node)) {
@@ -792,6 +825,7 @@ export const BlockEditor = (props: BlockEditorProps) => {
         offset += children![i].textContent!.length;
       }
     }
+    return { offset: -1, length: -1, backwards: null };
   };
 
   const getBlockStyle = (start: number) => {

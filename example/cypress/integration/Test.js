@@ -6,7 +6,7 @@ context("Insert and Delete text", () => {
     it('delete all works', () => {
         cy.visit('http://localhost:3000')
         cy
-        .get("#1")
+        .get("#block1")
         .click()
         .type("{selectAll}{backspace}")
         .should("have.text", "")
@@ -14,7 +14,7 @@ context("Insert and Delete text", () => {
 
     it('insert when empty works', () => {
         cy
-        .get("#1")
+        .get("#block1")
         .click()
         .type("{selectAll}{backspace}hello")
         .should("have.text", "hello")
@@ -22,7 +22,7 @@ context("Insert and Delete text", () => {
 
     it('insert works', () => {
         cy
-        .get('#1')
+        .get('#block1')
         .click()
         .type("testing")
         .should("have.text", "hellotesting")
@@ -30,7 +30,7 @@ context("Insert and Delete text", () => {
 
     it('insert in the middle works', () => {
         cy
-        .get("#1")
+        .get("#block1")
         .click()
         .type("{leftArrow}{leftArrow}x")
         .should("have.text", "hellotestixng")
@@ -38,7 +38,7 @@ context("Insert and Delete text", () => {
 
     it('delete works', () => {
         cy
-        .get('#1')
+        .get('#block1')
         .click()
         .type("{backspace}{backspace}")
         .should("have.text", "hellotestix")
@@ -46,7 +46,7 @@ context("Insert and Delete text", () => {
 
     it('delete in the middle works', () => {
         cy
-        .get('#1')
+        .get('#block1')
         .click()
         .type("{leftArrow}{leftArrow}{backspace}{backspace}")
         .should("have.text", "helloteix")
@@ -54,7 +54,7 @@ context("Insert and Delete text", () => {
 
     it('insert at start works', () => {
         cy
-        .get('#1')
+        .get('#block1')
         .click()
         .type("{home}pp")
         .should("have.text", "pphelloteix")
@@ -62,7 +62,7 @@ context("Insert and Delete text", () => {
 
     it('delete at start has no effect', () => {
         cy
-        .get('#1')
+        .get('#block1')
         .click()
         .type("{home}{backspace}")
         .should("have.text", "pphelloteix")
@@ -70,7 +70,7 @@ context("Insert and Delete text", () => {
 
     it('delete at start has no effect', () => {
         cy
-        .get('#1')
+        .get('#block1')
         .click()
         .type("{home}{backspace}")
         .should("have.text", "pphelloteix")
@@ -80,13 +80,13 @@ context("Insert and Delete text", () => {
 context("Apply and remove style", () => {
     it('text has color', () => {
         cy
-        .get("#1")
+        .get("#block1")
         .should("have.css", 'color', 'rgb(222, 184, 135)')
     })
 
     it('apply bold', () => {
         cy
-        .get("#1")
+        .get("#block1")
         .type('{selectall}')
         .type('{meta+a}')
         
@@ -97,7 +97,7 @@ context("Apply and remove style", () => {
 
     it('delete bold', () => {
         cy
-        .get("#1")
+        .get("#block1")
         .type('{selectall}')
         .type('{meta+a}')
         
@@ -108,7 +108,7 @@ context("Apply and remove style", () => {
 
     it('apply italic', () => {
         cy
-        .get("#1")
+        .get("#block1")
         .type('{selectall}')
         .type('{meta+d}')
         
@@ -119,7 +119,7 @@ context("Apply and remove style", () => {
 
     it('delete italic', () => {
         cy
-        .get("#1")
+        .get("#block1")
         .type('{selectall}')
         .type('{meta+d}')
         
@@ -130,7 +130,7 @@ context("Apply and remove style", () => {
 
     it('apply code', () => {
         cy
-        .get("#1")
+        .get("#block1")
         .type('{selectall}')
         .type('{meta+f}')
         
@@ -142,7 +142,7 @@ context("Apply and remove style", () => {
 
     it('delete code', () => {
         cy
-        .get("#1")
+        .get("#block1")
         .type('{selectall}')
         .type('{meta+f}')
         
@@ -153,7 +153,7 @@ context("Apply and remove style", () => {
 
     it('apply underline', () => {
         cy
-        .get("#1")
+        .get("#block1")
         .type('{selectall}')
         .type('{meta+s}')
         
@@ -164,7 +164,7 @@ context("Apply and remove style", () => {
 
     it('delete underline', () => {
         cy
-        .get("#1")
+        .get("#block1")
         .type('{selectall}')
         .type('{meta+s}')
         
@@ -175,7 +175,7 @@ context("Apply and remove style", () => {
 
     it('apply strikethrough', () => {
         cy
-        .get("#1")
+        .get("#block1")
         .type('{selectall}')
         .type('{meta+e}')
         
@@ -186,7 +186,7 @@ context("Apply and remove style", () => {
 
     it('delete strikethrough', () => {
         cy
-        .get("#1")
+        .get("#block1")
         .type('{selectall}')
         .type('{meta+e}')
         
@@ -199,7 +199,7 @@ context("Apply and remove style", () => {
 context("key commands", () => {
     it('Enter has no effect', () => {
         cy
-        .get("#1")
+        .get("#block1")
         .click()
         .type("{enter}")
         .should("have.text", "pphelloteix" )

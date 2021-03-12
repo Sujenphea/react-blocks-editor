@@ -4,6 +4,7 @@ import { BlockProvider, BlockStyleMap, StyleType } from "./BlockContext";
 import { BlockEditor } from "./BlockEditor";
 import { Block } from "./Block";
 import { CharacterMetadata, defaultCharMeta } from "./CharacterMetadata";
+import { SelectionRanges } from "./SelectionRanges";
 
 const Index = () => {
   const customInlineStyleMap: BlockStyleMap = {
@@ -35,7 +36,11 @@ const Index = () => {
   };
 
   const onChange = (block: Block) => {
-    console.log(block.getAttributes());
+    // console.log(block.getAttributes());
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent, selection: SelectionRanges) => {
+    return;
   };
 
   return (
@@ -48,15 +53,88 @@ const Index = () => {
       >
         <BlockEditor
           block={
-            new Block("1", "he", [
-              defaultCharMeta,
-              defaultCharMeta,
-              defaultCharMeta,
-              defaultCharMeta,
-              defaultCharMeta,
+            new Block("block1", "hello world", [
+              {
+                isBold: false,
+                isCode: false,
+                isItalic: false,
+                isStrikethrough: false,
+                isUnderline: false,
+              },
+              {
+                isBold: false,
+                isCode: false,
+                isItalic: false,
+                isStrikethrough: false,
+                isUnderline: false,
+              },
+              {
+                isBold: false,
+                isCode: false,
+                isItalic: false,
+                isStrikethrough: false,
+                isUnderline: true,
+              },
+              {
+                isBold: false,
+                isCode: false,
+                isItalic: false,
+                isStrikethrough: false,
+                isUnderline: true,
+              },
+              {
+                isBold: false,
+                isCode: false,
+                isItalic: false,
+                isStrikethrough: false,
+                isUnderline: true,
+              },
+              {
+                isBold: false,
+                isCode: false,
+                isItalic: false,
+                isStrikethrough: false,
+                isUnderline: true,
+              },
+              {
+                isBold: false,
+                isCode: false,
+                isItalic: false,
+                isStrikethrough: false,
+                isUnderline: true,
+              },
+              {
+                isBold: false,
+                isCode: false,
+                isItalic: false,
+                isStrikethrough: false,
+                isUnderline: true,
+              },
+              {
+                isBold: false,
+                isCode: false,
+                isItalic: false,
+                isStrikethrough: false,
+                isUnderline: false,
+              },
+              {
+                isBold: false,
+                isCode: false,
+                isItalic: false,
+                isStrikethrough: false,
+                isUnderline: false,
+              },
+              {
+                isBold: false,
+                isCode: false,
+                isItalic: false,
+                isStrikethrough: false,
+                isUnderline: false,
+              },
             ])
           }
           onChange={onChange}
+          onKeyDown={onKeyDown}
         ></BlockEditor>
       </BlockProvider>
     </div>
